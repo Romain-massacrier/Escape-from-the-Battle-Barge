@@ -1,5 +1,6 @@
 package fr.campus.escapebattlebarge.app;
 
+import fr.campus.escapebattlebarge.ui.CharacterSelectScreen;
 import fr.campus.escapebattlebarge.ui.GameIntroScreen;
 import fr.campus.escapebattlebarge.ui.MenuScreen;
 import fr.campus.escapebattlebarge.ui.TitleScreen;
@@ -37,7 +38,8 @@ public class Main {
                             "Les champs de confinement cèdent un à un.\n" +
                             "Chaque secousse annonce une rupture imminente.\n\n" +
                             "Chaque seconde rapproche le cœur du vaisseau\n" +
-                            "d’une implosion cataclysmique.\n\n" +
+                            "d’une implosion cataclysmique.\n\n"
+                            +
                             "Pourtant…\n" +
                             "au milieu du brasier,\n" +
                             "une présence avance.\n\n" +
@@ -57,6 +59,7 @@ public class Main {
                             "Car tant qu’un seul fils du Lion respire,\n" +
                             "l’ennemi ne triomphe jamais.\n\n" +
                             "Appuyez sur Entrée pour commencer."
+
             };
 
             GameIntroScreen intro = new GameIntroScreen();
@@ -66,8 +69,20 @@ public class Main {
                 MenuScreen menu = new MenuScreen();
 
                 menu.show(() -> {
-                    System.out.println("New Game");
-                    // lancer ton jeu ici
+
+                    CharacterSelectScreen select = new CharacterSelectScreen();
+
+                    select.show(
+                            () -> {
+                                System.out.println("Space Marine choisi");
+                                // TODO lancer ton jeu avec Space Marine
+                            },
+                            () -> {
+                                System.out.println("Librarian choisi");
+                                // TODO lancer ton jeu avec Librarian
+                            }
+                    );
+
                 });
 
             });

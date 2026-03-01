@@ -1,7 +1,7 @@
 package fr.campus.escapebattlebarge.app;
 
-import fr.campus.escapebattlebarge.game.Game;
 import fr.campus.escapebattlebarge.ui.GameIntroScreen;
+import fr.campus.escapebattlebarge.ui.MenuScreen;
 import fr.campus.escapebattlebarge.ui.TitleScreen;
 
 public class Main {
@@ -11,6 +11,7 @@ public class Main {
         TitleScreen title = new TitleScreen();
 
         title.show(() -> {
+
             String[] pages = {
                     "Dans les ténèbres glacées de l’espace,\n" +
                             "une silhouette sacrée dérive lentement.\n\n" +
@@ -27,11 +28,10 @@ public class Main {
                             "Une horde d’Orkz s’est abattue sur le vaisseau.\n\n" +
                             "Appuyez sur Entrée pour continuer.",
 
-
-                            "Ils martèlent les portes blindées.\n" +
+                    "Ils martèlent les portes blindées.\n" +
                             "Ils rient au milieu des flammes.\n\n" +
                             "Leurs armes tonnent dans les couloirs.\n" +
-                            "Leurs ombres se projettent sur les parois calcinées.\n" +
+                            "Les leurs ombres se projettent sur les parois calcinées.\n" +
                             "Leur sauvagerie ne connaît aucune limite.\n\n" +
                             "Les réacteurs à plasma deviennent instables.\n" +
                             "Les champs de confinement cèdent un à un.\n" +
@@ -43,9 +43,9 @@ public class Main {
                             "une présence avance.\n\n" +
                             "Appuyez sur Entrée pour continuer.",
 
-                            "Un fils des Dark Angels.\n\n" +
+                    "Un fils des Dark Angels.\n\n" +
                             "Il ne connaît ni la peur, ni la fatigue, ni le doute\n\n" +
-                                    "Son serment est gravé dans l’acier et le sang.\n" +
+                            "Son serment est gravé dans l’acier et le sang.\n" +
                             "Sa volonté est une lame.\n" +
                             "Son devoir ne plie jamais.\n\n" +
                             "Sur la surface du monde en contrebas\n" +
@@ -60,10 +60,19 @@ public class Main {
             };
 
             GameIntroScreen intro = new GameIntroScreen();
+
             intro.show(pages, () -> {
-                Game game = new Game();
-                game.start();
+
+                MenuScreen menu = new MenuScreen();
+
+                menu.show(() -> {
+                    System.out.println("New Game");
+                    // lancer ton jeu ici
+                });
+
             });
+
         });
+
     }
 }

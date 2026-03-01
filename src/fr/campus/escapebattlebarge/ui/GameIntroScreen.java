@@ -3,8 +3,7 @@ package fr.campus.escapebattlebarge.ui;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
@@ -50,25 +49,25 @@ public class GameIntroScreen {
             frame.setLocationRelativeTo(null);
 
             final int[] pageIndex = {0};
-            storyArea.setText(pages[pageIndex[0]]);
+            if (pages != null && pages.length > 0) {
+                storyArea.setText(pages[0]);
+            }
 
             startLoopAudio("/audio/intro.wav");
 
-            frame.addKeyListener(new KeyAdapter() {
+            JRootPane root = frame.getRootPane();
+            root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                    .put(KeyStroke.getKeyStroke("ENTER"), "next");
+            root.getActionMap().put("next", new AbstractAction() {
                 @Override
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        pageIndex[0]++;
+                public void actionPerformed(ActionEvent e) {
+                    pageIndex[0]++;
 
-                        if (pageIndex[0] < pages.length) {
-                            storyArea.setText(pages[pageIndex[0]]);
-                        } else {
-                            stopAudio();
-                            frame.dispose();
-                            if (onFinished != null) {
-                                onFinished.run();
-                            }
-                        }
+                    if (pages != null && pageIndex[0] < pages.length) {
+                        storyArea.setText(pages[pageIndex[0]]);
+                    } else {
+                        frame.dispose();
+                        if (onFinished != null) onFinished.run();
                     }
                 }
             });

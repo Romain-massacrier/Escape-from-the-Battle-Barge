@@ -36,20 +36,20 @@ public class CharacterSelectScreen {
             // =========================================================
 
             // Texte de présentation Space Marine (cadre du haut, à droite du portrait)
-            int marineX = 610;
-            int marineY = 250;
+            int marineX = 620;
+            int marineY = 280;
             int marineW = 560;
             int marineH = 180;
 
             // Texte de présentation Librarian (cadre du bas, à droite du portrait)
-            int librX = 610;
-            int librY = 480;
+            int librX = 620;
+            int librY = 510;
             int librW = 560;
             int librH = 180;
 
             // Console de validation en bas
-            int termX = 380;
-            int termY = 700;
+            int termX = 390;
+            int termY = 730;
             int termW = 880;
             int termH = 120;
 

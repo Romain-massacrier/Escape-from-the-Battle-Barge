@@ -4,6 +4,7 @@ import fr.campus.escapebattlebarge.ui.CharacterSelectScreen;
 import fr.campus.escapebattlebarge.ui.GameIntroScreen;
 import fr.campus.escapebattlebarge.ui.MenuScreen;
 import fr.campus.escapebattlebarge.ui.TitleScreen;
+import fr.campus.escapebattlebarge.ui.VideoIntroPlayer;
 
 public class Main {
 
@@ -13,75 +14,80 @@ public class Main {
 
         title.show(() -> {
 
-            String[] pages = {
-                    "Dans les ténèbres glacées de l’espace,\n" +
-                            "une silhouette sacrée dérive lentement.\n\n" +
-                            "La Battle Barge des Dark Angels agonise.\n" +
-                            "Sa coque est éventrée.\n" +
-                            "Ses ponts brûlent.\n" +
-                            "Ses coursives sont souillées par l’invasion.\n\n" +
-                            "Des étincelles jaillissent des panneaux fracturés.\n" +
-                            "Les statues impériales s’effondrent dans les flammes.\n" +
-                            "Le sanctuaire du vaisseau résonne d’échos funèbres.\n\n" +
-                            "Les alarmes vox hurlent sans relâche.\n" +
-                            "Les prières se mêlent aux ordres brisés.\n" +
-                            "Et le métal sacré se tord sous la violence.\n\n" +
-                            "Une horde d’Orkz s’est abattue sur le vaisseau.\n\n" +
-                            "Appuyez sur Entrée pour continuer.",
+            // 1) D'abord la vidéo
+            VideoIntroPlayer.play("/videos/intro.mp4", () -> {
 
-                    "Ils martèlent les portes blindées.\n" +
-                            "Ils rient au milieu des flammes.\n\n" +
-                            "Leurs armes tonnent dans les couloirs.\n" +
-                            "Les leurs ombres se projettent sur les parois calcinées.\n" +
-                            "Leur sauvagerie ne connaît aucune limite.\n\n" +
-                            "Les réacteurs à plasma deviennent instables.\n" +
-                            "Les champs de confinement cèdent un à un.\n" +
-                            "Chaque secousse annonce une rupture imminente.\n\n" +
-                            "Chaque seconde rapproche le cœur du vaisseau\n" +
-                            "d’une implosion cataclysmique.\n\n"
-                            +
-                            "Pourtant…\n" +
-                            "au milieu du brasier,\n" +
-                            "une présence avance.\n\n" +
-                            "Appuyez sur Entrée pour continuer.",
+                // 2) Puis ton intro texte (inchangée)
+                String[] pages = {
+                        "Dans les ténèbres glacées de l’espace,\n" +
+                                "une silhouette sacrée dérive lentement.\n\n" +
+                                "La Battle Barge des Dark Angels agonise.\n" +
+                                "Sa coque est éventrée.\n" +
+                                "Ses ponts brûlent.\n" +
+                                "Ses coursives sont souillées par l’invasion.\n\n" +
+                                "Des étincelles jaillissent des panneaux fracturés.\n" +
+                                "Les statues impériales s’effondrent dans les flammes.\n" +
+                                "Le sanctuaire du vaisseau résonne d’échos funèbres.\n\n" +
+                                "Les alarmes vox hurlent sans relâche.\n" +
+                                "Les prières se mêlent aux ordres brisés.\n" +
+                                "Et le métal sacré se tord sous la violence.\n\n" +
+                                "Une horde d’Orkz s’est abattue sur le vaisseau.\n\n" +
+                                "Appuyez sur Entrée pour continuer.",
 
-                    "Un fils des Dark Angels.\n\n" +
-                            "Il ne connaît ni la peur, ni la fatigue, ni le doute\n\n" +
-                            "Son serment est gravé dans l’acier et le sang.\n" +
-                            "Sa volonté est une lame.\n" +
-                            "Son devoir ne plie jamais.\n\n" +
-                            "Sur la surface du monde en contrebas\n" +
-                            "attend le Primarque des Dark Angels :\n\n" +
-                            "Lion El'Jonson.\n\n" +
-                            "Traversez le vaisseau infesté.\n" +
-                            "Purger la horde.\n" +
-                            "Atteindre la surface avant l’implosion.\n\n" +
-                            "Car tant qu’un seul fils du Lion respire,\n" +
-                            "l’ennemi ne triomphe jamais.\n\n" +
-                            "Appuyez sur Entrée pour commencer."
+                        "Ils martèlent les portes blindées.\n" +
+                                "Ils rient au milieu des flammes.\n\n" +
+                                "Leurs armes tonnent dans les couloirs.\n" +
+                                "Les leurs ombres se projettent sur les parois calcinées.\n" +
+                                "Leur sauvagerie ne connaît aucune limite.\n\n" +
+                                "Les réacteurs à plasma deviennent instables.\n" +
+                                "Les champs de confinement cèdent un à un.\n" +
+                                "Chaque secousse annonce une rupture imminente.\n\n" +
+                                "Chaque seconde rapproche le cœur du vaisseau\n" +
+                                "d’une implosion cataclysmique.\n\n"
+                                +
+                                "Pourtant…\n" +
+                                "au milieu du brasier,\n" +
+                                "une présence avance.\n\n" +
+                                "Appuyez sur Entrée pour continuer.",
 
-            };
+                        "Un fils des Dark Angels.\n\n" +
+                                "Il ne connaît ni la peur, ni la fatigue, ni le doute\n\n" +
+                                "Son serment est gravé dans l’acier et le sang.\n" +
+                                "Sa volonté est une lame.\n" +
+                                "Son devoir ne plie jamais.\n\n" +
+                                "Sur la surface du monde en contrebas\n" +
+                                "attend le Primarque des Dark Angels :\n\n" +
+                                "Lion El'Jonson.\n\n" +
+                                "Traversez le vaisseau infesté.\n" +
+                                "Purger la horde.\n" +
+                                "Atteindre la surface avant l’implosion.\n\n" +
+                                "Car tant qu’un seul fils du Lion respire,\n" +
+                                "l’ennemi ne triomphe jamais.\n\n" +
+                                "Appuyez sur Entrée pour commencer."
+                };
 
-            GameIntroScreen intro = new GameIntroScreen();
+                GameIntroScreen intro = new GameIntroScreen();
 
-            intro.show(pages, () -> {
+                intro.show(pages, () -> {
 
-                MenuScreen menu = new MenuScreen();
+                    MenuScreen menu = new MenuScreen();
 
-                menu.show(() -> {
+                    menu.show(() -> {
 
-                    CharacterSelectScreen select = new CharacterSelectScreen();
+                        CharacterSelectScreen select = new CharacterSelectScreen();
 
-                    select.show(
-                            () -> {
-                                System.out.println("Space Marine choisi");
-                                // TODO lancer ton jeu avec Space Marine
-                            },
-                            () -> {
-                                System.out.println("Librarian choisi");
-                                // TODO lancer ton jeu avec Librarian
-                            }
-                    );
+                        select.show(
+                                () -> {
+                                    System.out.println("Space Marine choisi");
+                                    // TODO lancer ton jeu avec Space Marine
+                                },
+                                () -> {
+                                    System.out.println("Librarian choisi");
+                                    // TODO lancer ton jeu avec Librarian
+                                }
+                        );
+
+                    });
 
                 });
 

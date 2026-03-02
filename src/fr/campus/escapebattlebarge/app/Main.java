@@ -4,7 +4,6 @@ import fr.campus.escapebattlebarge.ui.CharacterSelectScreen;
 import fr.campus.escapebattlebarge.ui.GameIntroScreen;
 import fr.campus.escapebattlebarge.ui.MenuScreen;
 import fr.campus.escapebattlebarge.ui.TitleScreen;
-import fr.campus.escapebattlebarge.ui.VideoIntroPlayer;
 
 public class Main {
 
@@ -14,8 +13,7 @@ public class Main {
 
         title.show(() -> {
 
-            // 1) D'abord la vidéo
-            VideoIntroPlayer.play("/videos/intro.mp4", () -> {
+
 
                 // 2) Puis ton intro texte (inchangée)
                 String[] pages = {
@@ -93,7 +91,7 @@ public class Main {
 
             });
 
-        });
+
 
     }
 }

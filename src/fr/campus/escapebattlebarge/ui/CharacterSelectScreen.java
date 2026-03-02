@@ -5,10 +5,16 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.function.Consumer;
 
 public class CharacterSelectScreen {
 
-    public void show(Runnable onMarineSelected, Runnable onLibrarianSelected) {
+    private enum Step {
+        SELECT_CLASS,
+        ENTER_NAME
+    }
+
+    public void show(Consumer<String> onMarineSelected, Consumer<String> onLibrarianSelected) {
 
         SwingUtilities.invokeLater(() -> {
 
@@ -32,35 +38,31 @@ public class CharacterSelectScreen {
             Color green = new Color(0, 255, 120);
 
             // =========================================================
-            // POSITIONS (tu peux tout modifier ici)
+            // POSITIONS
             // =========================================================
 
-            // Texte de présentation Space Marine (cadre du haut, à droite du portrait)
             int marineX = 620;
             int marineY = 280;
             int marineW = 560;
             int marineH = 180;
 
-            // Texte de présentation Librarian (cadre du bas, à droite du portrait)
             int librX = 620;
             int librY = 510;
             int librW = 560;
             int librH = 180;
 
-            // Console de validation en bas
             int termX = 390;
-            int termY = 730;
+            int termY = 700;
             int termW = 880;
             int termH = 120;
 
-            // Champ input dans la console
-            int inputX = 600;
+            int inputX = 620;
             int inputY = 50;
-            int inputW = 90;
+            int inputW = 120;
             int inputH = 28;
 
             // =========================================================
-            // TEXTES (tu peux modifier ici)
+            // TEXTES
             // =========================================================
 
             String marineText =
@@ -69,19 +71,14 @@ public class CharacterSelectScreen {
                             "Armements: Bolter, Épée tronçonneuse.\n" +
                             "Attaque : +5 - Vie : +10\n";
 
-
             String librarianText =
                     "LIBRARIAN\n\n" +
                             "Sa pensée tranche plus profond qu’aucune lame.\n\n" +
                             "Armements : Bâton de force, Tempête psychique.\n" +
                             "Attaque : +8 - Vie : +6\n";
 
-            String consoleLine1 = "Console d'Auspex : sélection d'Astartes";
-            String consoleLine2 = "1  Space Marine       2  Librarian";
-            String consoleLine3 = "Entrez 1 ou 2, puis scellez votre choix par Entrée :";
-
             // =========================================================
-            // UI: Textes de présentation (pas de nouveaux cadres verts)
+            // UI: Textes de présentation
             // =========================================================
 
             JTextArea marineInfo = makeInfoArea(green, 18, true);
@@ -95,7 +92,7 @@ public class CharacterSelectScreen {
             background.add(librarianInfo);
 
             // =========================================================
-            // UI: Console (cadre fin uniquement, pas les 2 grands cadres)
+            // UI: Console
             // =========================================================
 
             JPanel terminal = new JPanel(null);
@@ -103,15 +100,15 @@ public class CharacterSelectScreen {
             terminal.setOpaque(false);
             background.add(terminal);
 
-            JLabel line1 = makeLabel(consoleLine1, green, "Monospaced", Font.BOLD, 18);
+            JLabel line1 = makeLabel("Console d'Auspex : sélection d'Astartes", green, "Monospaced", Font.BOLD, 18);
             line1.setBounds(18, 10, termW - 36, 20);
             terminal.add(line1);
 
-            JLabel line2 = makeLabel(consoleLine2, green, "Monospaced", Font.PLAIN, 18);
+            JLabel line2 = makeLabel("1  Space Marine       2  Librarian", green, "Monospaced", Font.PLAIN, 18);
             line2.setBounds(18, 32, termW - 36, 20);
             terminal.add(line2);
 
-            JLabel line3 = makeLabel(consoleLine3, green, "Monospaced", Font.PLAIN, 18);
+            JLabel line3 = makeLabel("Entrez 1 ou 2, puis scellez votre choix par Entrée :", green, "Monospaced", Font.PLAIN, 18);
             line3.setBounds(18, 55, termW - 36, 18);
             terminal.add(line3);
 
@@ -126,30 +123,56 @@ public class CharacterSelectScreen {
             terminal.add(input);
 
             // =========================================================
-            // LOGIQUE SELECTION
+            // LOGIQUE: 2 ETAPES
             // =========================================================
 
-            final int[] selected = {1};
+            final Step[] step = { Step.SELECT_CLASS };
+            final int[] selected = { 1 };
+
+            Runnable switchToNameStep = () -> {
+                step[0] = Step.ENTER_NAME;
+
+                line1.setText("Console d'Auspex : identité du guerrier");
+                line2.setText(selected[0] == 1 ? "Classe : Space Marine" : "Classe : Librarian");
+                line3.setText("Entrez le nom du personnage, puis appuyez sur Entrée :");
+
+                input.setText("");
+                input.requestFocusInWindow();
+            };
 
             Runnable validate = () -> {
                 String v = input.getText().trim();
 
-                if ("1".equals(v)) {
-                    selected[0] = 1;
-                } else if ("2".equals(v)) {
-                    selected[0] = 2;
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                    input.setText("");
+                if (step[0] == Step.SELECT_CLASS) {
+
+                    if ("1".equals(v)) {
+                        selected[0] = 1;
+                        switchToNameStep.run();
+                    } else if ("2".equals(v)) {
+                        selected[0] = 2;
+                        switchToNameStep.run();
+                    } else {
+                        Toolkit.getDefaultToolkit().beep();
+                        input.setText("");
+                    }
+
                     return;
                 }
+
+                // Step ENTER_NAME
+                if (v.isEmpty()) {
+                    Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+
+                String finalName = v;
 
                 frame.dispose();
 
                 if (selected[0] == 1) {
-                    if (onMarineSelected != null) onMarineSelected.run();
+                    if (onMarineSelected != null) onMarineSelected.accept(finalName);
                 } else {
-                    if (onLibrarianSelected != null) onLibrarianSelected.run();
+                    if (onLibrarianSelected != null) onLibrarianSelected.accept(finalName);
                 }
             };
 
@@ -163,6 +186,7 @@ public class CharacterSelectScreen {
             root.getActionMap().put("marine", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (step[0] != Step.SELECT_CLASS) return;
                     input.setText("1");
                     selected[0] = 1;
                     input.requestFocusInWindow();
@@ -174,6 +198,7 @@ public class CharacterSelectScreen {
             root.getActionMap().put("librarian", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (step[0] != Step.SELECT_CLASS) return;
                     input.setText("2");
                     selected[0] = 2;
                     input.requestFocusInWindow();
@@ -211,7 +236,7 @@ public class CharacterSelectScreen {
         a.setWrapStyleWord(true);
         a.setForeground(green);
         a.setFont(new Font("Monospaced", Font.PLAIN, fontSize));
-        a.setOpaque(!transparent ? true : false);
+        a.setOpaque(!transparent);
         a.setBorder(new EmptyBorder(6, 6, 6, 6));
         return a;
     }

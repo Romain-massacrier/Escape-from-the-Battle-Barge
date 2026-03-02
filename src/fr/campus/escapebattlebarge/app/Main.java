@@ -75,13 +75,13 @@ public class Main {
                         CharacterSelectScreen select = new CharacterSelectScreen();
 
                         select.show(
-                                () -> {
-                                    System.out.println("Space Marine choisi");
-                                    // TODO lancer ton jeu avec Space Marine
+                                name -> {
+                                    System.out.println("Space Marine choisi, nom : " + name);
+                                    // TODO lancer ton jeu avec Space Marine + name
                                 },
-                                () -> {
-                                    System.out.println("Librarian choisi");
-                                    // TODO lancer ton jeu avec Librarian
+                                name -> {
+                                    System.out.println("Librarian choisi, nom : " + name);
+                                    // TODO lancer ton jeu avec Librarian + name
                                 }
                         );
 

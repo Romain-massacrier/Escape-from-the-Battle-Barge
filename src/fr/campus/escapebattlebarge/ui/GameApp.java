@@ -1,18 +1,22 @@
 package fr.campus.escapebattlebarge.ui;
 
-import fr.campus.escapebattlebarge.domain.*;
-import fr.campus.escapebattlebarge.game.*;
+import fr.campus.escapebattlebarge.domain.Player;
+import fr.campus.escapebattlebarge.game.Board;
+import fr.campus.escapebattlebarge.game.GameState;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 
 public class GameApp {
-    public static void start(Player player) {
-        Board board = new Board();
-        GameState state = new GameState(player, board);
 
-        SwingUtilities.invokeLater(() -> {
-            GameFrame f = new GameFrame(state);
-            f.setVisible(true);
-        });
-    }
+	public static void start(Player player) {
+		if (player == null) {
+			throw new IllegalArgumentException("player cannot be null");
+		}
+
+		SwingUtilities.invokeLater(() -> {
+			Board board = new Board();
+			GameState state = new GameState(board, player);
+			new GameFrame(state);
+		});
+	}
 }

@@ -4,10 +4,8 @@ public abstract class Player {
 
     private final String name;
     private final PlayerClass playerClass;
-
     private int hp;
     private final int maxHp;
-
     private int position; // case actuelle sur le plateau
     private final Inventory inventory;
 
@@ -27,23 +25,18 @@ public abstract class Player {
     public String getName() {
         return name;
     }
-
     public PlayerClass getPlayerClass() {
         return playerClass;
     }
-
     public int getHp() {
         return hp;
     }
-
     public int getMaxHp() {
         return maxHp;
     }
-
     public int getPosition() {
         return position;
     }
-
     public Inventory getInventory() {
         return inventory;
     }

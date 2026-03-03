@@ -68,6 +68,9 @@ public class Main {
 
             intro.show(pages, () -> {
 
+
+
+
                 MenuScreen menu = new MenuScreen();
 
                 menu.show(() -> {
@@ -96,3 +99,4 @@ public class Main {
         });
     }
 }
+

@@ -5,6 +5,8 @@ import fr.campus.escapebattlebarge.game.CombatEngine.InputProvider;
 
 public class GameController {
 
+    private static final String MAIN_PROMPT = "1 lancer dé | 2 inventaire";
+
     private final Dice dice = new Dice();
     private final EnemyFactory enemyFactory = new EnemyFactory();
     private final LootTables lootTables = new LootTables();
@@ -14,62 +16,63 @@ public class GameController {
 
     public GameController(GameState state) {
         this.state = state;
-
-        state.clearConsole();
-        state.log("1 lancer dé | 2 inventaire");
+        showMainPrompt();
         refreshStatusLine();
     }
 
+    // Test manuel:
+    // - Appuyer sur 1 puis Entrée.
+    // - Vérifier que la console est remplacée (clear) au début du tour,
+    //   et que les nouvelles lignes s'affichent sans s'empiler sous l'ancien tour.
     public void onRoll(InputProvider input) {
         Player p = state.getPlayer();
+        long session = state.clearConsoleAndStartNewSession();
 
-        // ✅ Remplace l’affichage précédent
-        state.clearConsole();
-        state.log("1 lancer dé | 2 inventaire");
-
-        state.log("Dé en cours...");
-        sleep(350);
+        showMainPrompt(session);
+        refreshStatusLine(session);
 
         int roll = dice.rollD6();
-        state.log("Résultat: " + roll);
 
         int newPos = p.getPosition() + roll;
         p.setPosition(newPos);
 
         if (newPos >= 64) {
-            state.log("Tu atteins la zone d’extraction. Un boss t’attend.");
-            boolean win = combat.fight(p, enemyFactory.createBoss(), state::log, input);
+            state.log(session, "Tu atteins la zone d’extraction. Un boss t’attend.");
+            boolean win = combat.fight(p, enemyFactory.createBoss(), msg -> state.log(session, msg), input);
             if (win) {
-                state.log("Victoire. Extraction réussie.");
+                state.log(session, "Victoire. Extraction réussie.");
             }
-            refreshStatusLine();
+            if (p.isAlive()) {
+                state.clearConsole();
+                showMainPrompt(session);
+            }
+            refreshStatusLine(session, roll);
             return;
         }
 
         Tile tile = state.getBoard().getTile(newPos);
         Zone zone = (tile != null) ? tile.getZone() : Zone.EXTRACTION;
 
-        state.log("Position: case " + newPos + " | Zone: " + zone.getLabel());
-
         if (tile == null) {
-            refreshStatusLine();
+            showMainPrompt(session);
+            refreshStatusLine(session, roll);
             return;
         }
 
         switch (tile.getType()) {
-            case MONSTER -> handleMonster(zone, input);
-            case TREASURE -> handleTreasure(zone);
-            default -> state.log("Rien à signaler. Avance.");
+            case MONSTER -> handleMonster(zone, input, session);
+            case TREASURE -> handleTreasure(zone, session);
+            default -> state.log(session, "Rien à signaler. Avance.");
         }
 
-        refreshStatusLine();
+        showMainPrompt(session);
+        refreshStatusLine(session, roll);
     }
 
     public void onInventory(InputProvider input) {
         Player p = state.getPlayer();
         Inventory inv = p.getInventory();
 
-        // ✅ Remplace l’affichage précédent
         state.clearConsole();
         state.log("Inventaire:");
 
@@ -98,8 +101,7 @@ public class GameController {
         state.log("Choix: 1 Equiper arme (stock) | autre retour");
         String c = input.readChoice();
         if (!"1".equals(c)) {
-            state.clearConsole();
-            state.log("1 lancer dé | 2 inventaire");
+            returnToMainPrompt();
             refreshStatusLine();
             return;
         }
@@ -129,32 +131,46 @@ public class GameController {
         inv.equipWeapon((Weapon) it);
         state.log("Arme équipée: " + it.getName());
 
-        state.clearConsole();
-        state.log("1 lancer dé | 2 inventaire");
+        returnToMainPrompt();
         refreshStatusLine();
     }
 
-    private void handleMonster(Zone zone, InputProvider input) {
-        Player p = state.getPlayer();
-        state.log("Alerte: contact hostile.");
-
-        Enemy e = enemyFactory.createForZone(zone);
-        boolean win = combat.fight(p, e, state::log, input);
-        if (!win && !p.isAlive()) return;
+    private void showMainPrompt() {
+        state.logMainPrompt(MAIN_PROMPT);
     }
 
-    private void handleTreasure(Zone zone) {
+    private void showMainPrompt(long session) {
+        state.logMainPrompt(session, MAIN_PROMPT);
+    }
+
+    private void returnToMainPrompt() {
+        state.clearConsole();
+        showMainPrompt();
+    }
+
+    private void handleMonster(Zone zone, InputProvider input, long session) {
         Player p = state.getPlayer();
-        state.log("Découverte: trésor.");
+        state.log(session, "Alerte: contact hostile.");
+
+        Enemy e = enemyFactory.createForZone(zone);
+        boolean win = combat.fight(p, e, msg -> state.log(session, msg), input);
+        if (!win && !p.isAlive()) return;
+
+        state.clearConsole();
+    }
+
+    private void handleTreasure(Zone zone, long session) {
+        Player p = state.getPlayer();
+        state.log(session, "Découverte: trésor.");
 
         Item item = lootTables.rollTreasure(p, zone);
 
         if (item instanceof Consumable cons) {
             boolean ok = p.getInventory().addConsumable(cons);
             if (ok) {
-                state.log("Tu obtiens: " + cons.getName());
+                state.log(session, "Tu obtiens: " + cons.getName());
             } else {
-                state.log("Consommables pleins. Stock: " + cons.getName());
+                state.log(session, "Consommables pleins. Stock: " + cons.getName());
                 p.getInventory().addToStash(cons);
             }
             return;
@@ -162,19 +178,33 @@ public class GameController {
 
         // Weapon ou Power
         p.getInventory().addToStash(item);
-        state.log("Tu obtiens: " + item.getName() + " (stock)");
+        state.log(session, "Tu obtiens: " + item.getName() + " (stock)");
     }
 
     private void refreshStatusLine() {
         Player p = state.getPlayer();
-        Weapon w = p.getInventory().getEquippedWeapon();
+        Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
 
-        state.log("Statut: PV " + p.getHp() + "/" + p.getMaxHp()
+        state.logStatus("Statut: PV " + p.getHp() + "/" + p.getMaxHp()
                 + " | Case " + p.getPosition()
-                + " | Arme " + (w == null ? "Aucune" : w.getName()));
+            + " | Zone " + zone.getLabel());
     }
 
-    private void sleep(long ms) {
-        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
+    private void refreshStatusLine(long session) {
+        Player p = state.getPlayer();
+        Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
+
+        state.logStatus(session, "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
+                + " | Case " + p.getPosition()
+            + " | Zone " + zone.getLabel());
+        }
+
+        private void refreshStatusLine(long session, int roll) {
+        Player p = state.getPlayer();
+        Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
+
+        state.logStatus(session, "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
+            + " | Case " + p.getPosition() + " (+" + roll + ")"
+            + " | Zone " + zone.getLabel());
     }
 }

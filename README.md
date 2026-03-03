@@ -1,5 +1,9 @@
 # Escape from the Battle Barge
 
+<p align="center">
+  <img src="images/title.png" width="600">
+</p>
+
 Jeu Java (Swing) inspiré de l’univers Warhammer 40K : vous incarnez un Space Marine Dark Angels qui doit traverser une Battle Barge infestée d’Orks avant l’implosion.
 
 ## Aperçu

@@ -1,13 +1,15 @@
 package fr.campus.escapebattlebarge.game;
 
 import fr.campus.escapebattlebarge.domain.AssaultMarine;
-import fr.campus.escapebattlebarge.domain.Character;
 import fr.campus.escapebattlebarge.domain.Librarian;
+import fr.campus.escapebattlebarge.domain.Player;
+import fr.campus.escapebattlebarge.domain.PlayerClass;
 import fr.campus.escapebattlebarge.ui.Menu;
 
 public class Game {
+
     private final Menu menu;
-    private Character player;
+    private Player player;
     private boolean running;
 
     public Game() {
@@ -48,12 +50,23 @@ public class Game {
 
             if (choice == 1) {
                 menu.showCharacter(player);
+
             } else if (choice == 2) {
+                // Player.name est final, donc on "renomme" en recréant le perso
                 String newName = menu.askNewName();
-                player.setName(newName);
+                PlayerClass cls = player.getPlayerClass();
+
+                if (cls == PlayerClass.ASSAULT_MARINE) {
+                    player = new AssaultMarine(newName);
+                } else {
+                    player = new Librarian(newName);
+                }
+
                 System.out.println("Name updated.");
+
             } else if (choice == 3) {
                 inCharacterMenu = false;
+
             } else {
                 running = false;
             }

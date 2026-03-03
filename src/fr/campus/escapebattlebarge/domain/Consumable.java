@@ -13,5 +13,6 @@ public class Consumable extends Item {
     @Override
     public String toString() {
         return getName() + " (soin +" + healAmount + ")";
+
     }
 }

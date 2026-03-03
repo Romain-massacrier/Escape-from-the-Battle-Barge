@@ -124,7 +124,7 @@ public class GameIntroScreen {
             // Lancement musique d’introduction
             // ==============================
 
-            startLoopAudio("/audio/intro.wav");
+            AudioManager.startLoopAudio("/audio/intro.wav");
 
             // ==============================
             // Gestion touche ENTER pour passer page

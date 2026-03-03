@@ -1,32 +1,17 @@
 package fr.campus.escapebattlebarge.ui;
 
-// Import de la classe Character depuis la couche domain
-// Permet d'afficher les informations du personnage
-import fr.campus.escapebattlebarge.domain.Character;
+import fr.campus.escapebattlebarge.domain.Player;
 
-// Scanner utilisé pour lire les entrées utilisateur dans la console
 import java.util.Scanner;
 
 public class Menu {
 
-    // Scanner unique utilisé pour toute la durée de vie du menu
-    // final = référence non modifiable après initialisation
     private final Scanner scanner;
 
-    /**
-     * Constructeur du menu.
-     * Initialise le Scanner sur l'entrée standard (clavier).
-     */
     public Menu() {
         this.scanner = new Scanner(System.in);
     }
 
-    /**
-     * Affiche le menu principal.
-     * Propose la création d'un personnage ou la sortie du programme.
-     *
-     * @return un entier compris entre 1 et 2
-     */
     public int askMainChoice() {
 
         System.out.println();
@@ -35,15 +20,9 @@ public class Menu {
         System.out.println("2. Quit");
         System.out.print("Choice: ");
 
-        // Lecture sécurisée d'un entier entre 1 et 2
         return readIntInRange(1, 2);
     }
 
-    /**
-     * Demande à l'utilisateur de choisir une classe de personnage.
-     *
-     * @return un entier compris entre 1 et 2
-     */
     public int askCharacterType() {
 
         System.out.println();
@@ -55,12 +34,6 @@ public class Menu {
         return readIntInRange(1, 2);
     }
 
-    /**
-     * Demande le nom du personnage.
-     * Empêche les noms vides.
-     *
-     * @return nom valide (non vide)
-     */
     public String askCharacterName() {
 
         System.out.println();
@@ -68,7 +41,6 @@ public class Menu {
 
         String name = scanner.nextLine().trim();
 
-        // Boucle tant que le nom est vide
         while (name.isEmpty()) {
             System.out.print("Name cannot be empty. Enter character name: ");
             name = scanner.nextLine().trim();
@@ -77,11 +49,6 @@ public class Menu {
         return name;
     }
 
-    /**
-     * Menu secondaire lié au personnage.
-     *
-     * @return un entier compris entre 1 et 4
-     */
     public int askCharacterMenuChoice() {
 
         System.out.println();
@@ -95,25 +62,26 @@ public class Menu {
         return readIntInRange(1, 4);
     }
 
-    /**
-     * Affiche les informations du personnage.
-     * Utilise la méthode toString() de la classe Character.
-     */
-    public void showCharacter(Character character) {
+    // 🔥 CORRECTION ICI : on utilise Player
+    public void showCharacter(Player player) {
 
         System.out.println();
         System.out.println("Character details:");
+        System.out.println("-------------------");
 
-        // Affichage direct de l'objet (appel implicite à toString())
-        System.out.println(character);
+        System.out.println("Name: " + player.getName());
+        System.out.println("Class: " + player.getPlayerClass());
+        System.out.println("HP: " + player.getHp() + "/" + player.getMaxHp());
+        System.out.println("Position: " + player.getPosition());
+
+        if (player.getInventory().getEquippedWeapon() != null) {
+            System.out.println("Weapon: " +
+                    player.getInventory().getEquippedWeapon().getName());
+        } else {
+            System.out.println("Weapon: None");
+        }
     }
 
-    /**
-     * Demande un nouveau nom pour le personnage.
-     * Refuse les noms vides.
-     *
-     * @return nouveau nom valide
-     */
     public String askNewName() {
 
         System.out.println();
@@ -129,15 +97,6 @@ public class Menu {
         return name;
     }
 
-    /**
-     * Méthode utilitaire privée.
-     * Lit un entier et vérifie qu'il est dans l'intervalle [min, max].
-     * Gère les erreurs de saisie (lettres, symboles, etc.).
-     *
-     * @param min valeur minimale autorisée
-     * @param max valeur maximale autorisée
-     * @return entier valide dans l'intervalle
-     */
     private int readIntInRange(int min, int max) {
 
         while (true) {
@@ -147,14 +106,11 @@ public class Menu {
             try {
                 int value = Integer.parseInt(line);
 
-                // Vérifie si la valeur est dans la plage autorisée
                 if (value >= min && value <= max) {
                     return value;
                 }
 
             } catch (NumberFormatException ignored) {
-                // Si la conversion échoue (ex: utilisateur tape "abc")
-                // on ignore l'erreur et on redemande
             }
 
             System.out.print("Invalid choice. Enter a number between "

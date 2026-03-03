@@ -4,7 +4,7 @@ public class Power extends Item {
     private final int minDmg;
     private final int maxDmg;
 
-    public Power(Sring name, int minDmg, int maxDmg) {
+    public Power(String name, int minDmg, int maxDmg) {
         super(name, ItemType.POWER);
         this.minDmg = minDmg;
         this.maxDmg = maxDmg;

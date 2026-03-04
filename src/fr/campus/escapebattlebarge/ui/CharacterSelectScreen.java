@@ -68,7 +68,7 @@ public class CharacterSelectScreen {
             String marineText =
                     "SPACE MARINE\n\n" +
                             "Il avance dans le sang et ne s’arrête jamais.\n\n" +
-                            "Armements: Bolter, Épée tronçonneuse.\n" +
+                            "Armements: Bolter, Chainsword.\n" +
                             "Attaque : +5 - Vie : +10\n";
 
             String librarianText =

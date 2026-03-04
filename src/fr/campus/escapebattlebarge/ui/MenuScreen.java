@@ -23,6 +23,8 @@ public class MenuScreen {
         // Garantit que tout le code Swing s'exécute dans le thread graphique (EDT)
         SwingUtilities.invokeLater(() -> {
 
+            AudioManager.startLoopAudio("/audio/intro.wav");
+
             // Création de la fenêtre principale
             JFrame frame = new JFrame("Escape from the Battle Barge");
 

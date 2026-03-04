@@ -8,7 +8,7 @@ import javax.swing.SwingUtilities;
 
 public class GameApp {
 
-	public static void start(Player player) {
+	public static void start(Player player, Runnable onReturnToMenu) {
 		if (player == null) {
 			throw new IllegalArgumentException("player cannot be null");
 		}
@@ -16,7 +16,7 @@ public class GameApp {
 		SwingUtilities.invokeLater(() -> {
 			Board board = new Board();
 			GameState state = new GameState(board, player);
-			new GameFrame(state);
+			new GameFrame(state, onReturnToMenu);
 		});
 	}
 }

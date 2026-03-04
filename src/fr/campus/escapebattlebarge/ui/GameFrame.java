@@ -11,19 +11,23 @@ import java.util.concurrent.BlockingQueue;
 
 public class GameFrame extends JFrame implements CombatEngine.InputProvider {
 
+    private final GameState state;
     private final GamePanel panel;
     private final GameController controller;
+    private final Runnable onReturnToMenu;
 
     private final JTextField inputField = new JTextField();
     private final BlockingQueue<String> inputs = new ArrayBlockingQueue<>(10);
     private volatile boolean actionInProgress = false;
     private volatile boolean waitingForChoice = false;
 
-    public GameFrame(GameState state) {
+    public GameFrame(GameState state, Runnable onReturnToMenu) {
         super("Escape from the Battle Barge");
 
+        this.state = state;
         this.panel = new GamePanel(state);
         this.controller = new GameController(state);
+        this.onReturnToMenu = onReturnToMenu;
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -44,6 +48,7 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
         inputField.setForeground(new Color(0, 255, 70));
         inputField.setCaretColor(new Color(0, 255, 70));
         inputField.setFont(new Font("Monospaced", Font.PLAIN, 22));
+        inputField.setHorizontalAlignment(JTextField.CENTER);
         layered.add(inputField, Integer.valueOf(1));
 
         inputField.addActionListener(e -> {
@@ -95,6 +100,22 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
             try {
                 action.run();
             } finally {
+                if (state.consumeExtractionAlertPlaybackRequest()) {
+                    AudioManager.playOneShotOverlay("/audio/alarme.wav");
+                }
+
+                if (state.consumeReturnToMainMenuRequest()) {
+                    SwingUtilities.invokeLater(() -> {
+                        AudioManager.stopAudio();
+                        dispose();
+                        if (onReturnToMenu != null) {
+                            onReturnToMenu.run();
+                        }
+                    });
+                    actionInProgress = false;
+                    return;
+                }
+
                 actionInProgress = false;
                 SwingUtilities.invokeLater(panel::repaint);
                 SwingUtilities.invokeLater(() -> inputField.requestFocusInWindow());

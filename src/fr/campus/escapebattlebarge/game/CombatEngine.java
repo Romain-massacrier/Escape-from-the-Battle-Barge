@@ -15,8 +15,6 @@ public class CombatEngine {
         log.accept("Action: Combat engagé contre " + enemy.getName() + " (PV " + enemy.getHp() + ")");
 
         while (player.isAlive() && enemy.isAlive()) {
-            log.accept("Combat: " + player.getName() + " PV " + player.getHp() + "/" + player.getMaxHp() +
-                " | Ennemi PV " + enemy.getHp());
             log.accept("1 Attaquer | 2 Potion | 3 Fuir");
 
             String choice = input.readChoice();
@@ -66,8 +64,6 @@ public class CombatEngine {
         }
 
         if (!player.isAlive()) {
-            log.accept("Tu t’effondres. Fin.");
-            waitForEnterToContinue(log, input);
             return false;
         }
 

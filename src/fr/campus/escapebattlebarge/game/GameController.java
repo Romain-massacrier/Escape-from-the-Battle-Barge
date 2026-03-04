@@ -9,10 +9,10 @@ public class GameController {
 
     private final Dice dice = new Dice();
     private final EnemyFactory enemyFactory = new EnemyFactory();
-    private final LootTables lootTables = new LootTables();
     private final CombatEngine combat = new CombatEngine(dice);
 
     private final GameState state;
+    private boolean extractionAlertPlayed = false;
 
     public GameController(GameState state) {
         this.state = state;
@@ -31,16 +31,29 @@ public class GameController {
         showMainPrompt(session);
         refreshStatusLine(session);
 
+        int oldPos = p.getPosition();
+        Zone oldZone = Zone.fromCell(Math.max(1, Math.min(64, oldPos)));
+
         int roll = dice.rollD6();
 
         int newPos = p.getPosition() + roll;
         p.setPosition(newPos);
+
+        Zone newZone = Zone.fromCell(Math.max(1, Math.min(64, newPos)));
+        if (!extractionAlertPlayed && oldZone != Zone.EXTRACTION && newZone == Zone.EXTRACTION) {
+            extractionAlertPlayed = true;
+            state.requestExtractionAlertPlayback();
+        }
 
         if (newPos >= 64) {
             state.log(session, "Tu atteins la zone d’extraction. Un boss t’attend.");
             boolean win = combat.fight(p, enemyFactory.createBoss(), msg -> state.log(session, msg), input);
             if (win) {
                 state.log(session, "Victoire. Extraction réussie.");
+            }
+            if (!p.isAlive()) {
+                handleDefeat(input, session);
+                return;
             }
             if (p.isAlive()) {
                 state.clearConsole();
@@ -51,7 +64,6 @@ public class GameController {
         }
 
         Tile tile = state.getBoard().getTile(newPos);
-        Zone zone = (tile != null) ? tile.getZone() : Zone.EXTRACTION;
 
         if (tile == null) {
             showMainPrompt(session);
@@ -60,9 +72,14 @@ public class GameController {
         }
 
         switch (tile.getType()) {
-            case MONSTER -> handleMonster(zone, input, session);
-            case TREASURE -> handleTreasure(zone, session);
+            case ENEMY_ORK, ENEMY_SORCERER, ENEMY_SQUIG, ENEMY_WARBOSS -> handleEnemy(tile.getType(), input, session);
+            case TREASURE_POTION, TREASURE_BIG_POTION -> handleTreasure(tile, session);
             default -> state.log(session, "Rien à signaler. Avance.");
+        }
+
+        if (!p.isAlive()) {
+            handleDefeat(input, session);
+            return;
         }
 
         showMainPrompt(session);
@@ -148,22 +165,30 @@ public class GameController {
         showMainPrompt();
     }
 
-    private void handleMonster(Zone zone, InputProvider input, long session) {
+    private void handleEnemy(TileType tileType, InputProvider input, long session) {
         Player p = state.getPlayer();
         state.log(session, "Alerte: contact hostile.");
 
-        Enemy e = enemyFactory.createForZone(zone);
+        Enemy e = enemyFactory.createForTileType(tileType);
+        state.setCurrentEnemy(e);
+
         boolean win = combat.fight(p, e, msg -> state.log(session, msg), input);
+        state.setCurrentEnemy(null);
+
         if (!win && !p.isAlive()) return;
 
         state.clearConsole();
     }
 
-    private void handleTreasure(Zone zone, long session) {
+    private void handleTreasure(Tile tile, long session) {
         Player p = state.getPlayer();
         state.log(session, "Découverte: trésor.");
 
-        Item item = lootTables.rollTreasure(p, zone);
+        Item item = switch (tile.getType()) {
+            case TREASURE_POTION -> new Consumable("Potion standard", 12);
+            case TREASURE_BIG_POTION -> new Consumable("Grande potion", 24);
+            default -> throw new IllegalStateException("Type de trésor inattendu: " + tile.getType());
+        };
 
         if (item instanceof Consumable cons) {
             boolean ok = p.getInventory().addConsumable(cons);
@@ -173,12 +198,21 @@ public class GameController {
                 state.log(session, "Consommables pleins. Stock: " + cons.getName());
                 p.getInventory().addToStash(cons);
             }
+            tile.setType(TileType.EMPTY);
             return;
         }
 
         // Weapon ou Power
         p.getInventory().addToStash(item);
         state.log(session, "Tu obtiens: " + item.getName() + " (stock)");
+        tile.setType(TileType.EMPTY);
+    }
+
+    private void handleDefeat(InputProvider input, long session) {
+        state.log(session, "Vous avez perdu.");
+        state.log(session, "appuyer sur entrer pour revenir au menu");
+        input.readChoice();
+        state.requestReturnToMainMenu();
     }
 
     private void refreshStatusLine() {
@@ -187,7 +221,7 @@ public class GameController {
 
         state.logStatus("Statut: PV " + p.getHp() + "/" + p.getMaxHp()
                 + " | Case " + p.getPosition()
-            + " | Zone " + zone.getLabel());
+            + " | " + zone.getLabel());
     }
 
     private void refreshStatusLine(long session) {
@@ -196,7 +230,7 @@ public class GameController {
 
         state.logStatus(session, "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
                 + " | Case " + p.getPosition()
-            + " | Zone " + zone.getLabel());
+            + " | " + zone.getLabel());
         }
 
         private void refreshStatusLine(long session, int roll) {
@@ -205,6 +239,6 @@ public class GameController {
 
         state.logStatus(session, "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
             + " | Case " + p.getPosition() + " (+" + roll + ")"
-            + " | Zone " + zone.getLabel());
+            + " | " + zone.getLabel());
     }
 }

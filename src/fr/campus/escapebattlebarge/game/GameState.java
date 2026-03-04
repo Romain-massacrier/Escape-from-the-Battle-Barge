@@ -1,5 +1,6 @@
 package fr.campus.escapebattlebarge.game;
 
+import fr.campus.escapebattlebarge.domain.Enemy;
 import fr.campus.escapebattlebarge.domain.Player;
 
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ public class GameState {
 
     private final Board board;
     private final Player player;
+    private Enemy currentEnemy;
+    private boolean returnToMainMenuRequested = false;
+    private boolean extractionAlertPending = false;
 
     private final List<String> consoleLines = new ArrayList<>();
     private long consoleSession = 0L;
@@ -33,6 +37,14 @@ public class GameState {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public synchronized Enemy getCurrentEnemy() {
+        return currentEnemy;
+    }
+
+    public synchronized void setCurrentEnemy(Enemy currentEnemy) {
+        this.currentEnemy = currentEnemy;
     }
 
     public synchronized void log(String line) {
@@ -225,5 +237,25 @@ public class GameState {
 
     public synchronized List<String> getConsoleLines() {
         return Collections.unmodifiableList(new ArrayList<>(consoleLines));
+    }
+
+    public synchronized void requestReturnToMainMenu() {
+        returnToMainMenuRequested = true;
+    }
+
+    public synchronized boolean consumeReturnToMainMenuRequest() {
+        boolean requested = returnToMainMenuRequested;
+        returnToMainMenuRequested = false;
+        return requested;
+    }
+
+    public synchronized void requestExtractionAlertPlayback() {
+        extractionAlertPending = true;
+    }
+
+    public synchronized boolean consumeExtractionAlertPlaybackRequest() {
+        boolean requested = extractionAlertPending;
+        extractionAlertPending = false;
+        return requested;
     }
 }

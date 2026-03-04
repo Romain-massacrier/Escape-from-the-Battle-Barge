@@ -48,4 +48,33 @@ public class AudioManager {
             clip = null;
         }
     }
+
+    public static void playOneShotOverlay(String resourcePath) {
+        try {
+            InputStream is = AudioManager.class.getResourceAsStream(resourcePath);
+            if (is == null) {
+                System.out.println("Audio not found: " + resourcePath);
+                return;
+            }
+
+            BufferedInputStream bis = new BufferedInputStream(is);
+            AudioInputStream ais = AudioSystem.getAudioInputStream(bis);
+            Clip oneShot = AudioSystem.getClip();
+            oneShot.open(ais);
+            oneShot.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    oneShot.close();
+                    try {
+                        ais.close();
+                        bis.close();
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
+            oneShot.start();
+
+        } catch (Exception e) {
+            System.out.println("Audio error: " + e.getMessage());
+        }
+    }
 }

@@ -4,35 +4,52 @@ import java.util.*;
 
 public class Board {
     private final Map<Integer, Tile> tiles = new HashMap<>();
-    private final Random rng = new Random();
 
     public Board() {
+        BoardLayout.validate();
+
         for (int i = 1; i <= 64; i++) {
             Zone z = Zone.fromCell(i);
-            tiles.put(i, new Tile(i, z, TileType.NORMAL));
+            tiles.put(i, new Tile(i, z, TileType.EMPTY));
         }
-        placeSpecialsPerZone();
-    }
 
-    private void placeSpecialsPerZone() {
-        for (Zone z : Zone.values()) {
-            List<Integer> cells = new ArrayList<>();
-            for (int i = z.getStart(); i <= z.getEnd(); i++) cells.add(i);
-
-            // On évite de mettre un event en case de départ de zone si tu veux plus tard.
-            // Pour l’instant, on autorise tout.
-            Collections.shuffle(cells, rng);
-
-            // 2 monstres + 1 trésor
-            setTypeSafe(cells.get(0), TileType.MONSTER);
-            setTypeSafe(cells.get(1), TileType.MONSTER);
-            setTypeSafe(cells.get(2), TileType.TREASURE);
-        }
+        applyEnemyLayout();
+        applyTreasureLayout();
     }
 
     private void setTypeSafe(int cell, TileType type) {
         Tile t = tiles.get(cell);
         if (t != null) t.setType(type);
+    }
+
+    private void applyEnemyLayout() {
+        for (int cell : BoardLayout.ORK_CELLS) {
+            setTypeSafe(cell, TileType.ENEMY_ORK);
+        }
+        for (int cell : BoardLayout.SORCERER_CELLS) {
+            setTypeSafe(cell, TileType.ENEMY_SORCERER);
+        }
+        for (int cell : BoardLayout.SQUIG_CELLS) {
+            setTypeSafe(cell, TileType.ENEMY_SQUIG);
+        }
+        for (int cell : BoardLayout.WARBOSS_CELLS) {
+            setTypeSafe(cell, TileType.ENEMY_WARBOSS);
+        }
+    }
+
+    private void applyTreasureLayout() {
+        // Priorité ennemi si collision
+        Set<Integer> enemyCells = BoardLayout.allEnemyCells();
+        for (int cell : BoardLayout.POTION_CELLS) {
+            if (!enemyCells.contains(cell)) {
+                setTypeSafe(cell, TileType.TREASURE_POTION);
+            }
+        }
+        for (int cell : BoardLayout.BIG_POTION_CELLS) {
+            if (!enemyCells.contains(cell)) {
+                setTypeSafe(cell, TileType.TREASURE_BIG_POTION);
+            }
+        }
     }
 
     public Tile getTile(int cell) {

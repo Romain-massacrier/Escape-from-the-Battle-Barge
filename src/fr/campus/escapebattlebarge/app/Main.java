@@ -11,6 +11,28 @@ import fr.campus.escapebattlebarge.ui.TitleScreen;
 
 public class Main {
 
+    private static void showMainMenu() {
+        MenuScreen menu = new MenuScreen();
+
+        menu.show(() -> {
+            CharacterSelectScreen select = new CharacterSelectScreen();
+
+            select.show(
+                    name -> {
+                        System.out.println("Space Marine choisi, nom : " + name);
+                        Player player = new AssaultMarine(name);
+                        GameApp.start(player, Main::showMainMenu);
+                    },
+                    name -> {
+                        System.out.println("Librarian choisi, nom : " + name);
+                        Player player = new Librarian(name);
+                        GameApp.start(player, Main::showMainMenu);
+                    }
+            );
+
+        });
+    }
+
     public static void main(String[] args) {
 
         TitleScreen title = new TitleScreen();
@@ -67,32 +89,8 @@ public class Main {
             GameIntroScreen intro = new GameIntroScreen();
 
             intro.show(pages, () -> {
+                showMainMenu();
 
-
-
-
-                MenuScreen menu = new MenuScreen();
-
-                menu.show(() -> {
-
-                    CharacterSelectScreen select = new CharacterSelectScreen();
-
-                    select.show(
-                            // Space Marine
-                            name -> {
-                                System.out.println("Space Marine choisi, nom : " + name);
-                                Player player = new AssaultMarine(name);
-                                GameApp.start(player);
-                            },
-                            // Librarian
-                            name -> {
-                                System.out.println("Librarian choisi, nom : " + name);
-                                Player player = new Librarian(name);
-                                GameApp.start(player);
-                            }
-                    );
-
-                });
 
             });
 

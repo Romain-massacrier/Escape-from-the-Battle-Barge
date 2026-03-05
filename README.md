@@ -70,7 +70,7 @@ Depuis la racine du projet :
 ```bash
 mkdir -p out
 javac -d out $(find src -name "*.java")
-java -cp out fr.campus.escapebattlebarge.app.Main
+java -cp out fr.campus.escapebattlebarge.Main
 ```
 
 ## Arborescence simplifiée

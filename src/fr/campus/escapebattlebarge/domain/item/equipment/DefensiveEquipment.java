@@ -4,6 +4,7 @@ package fr.campus.escapebattlebarge.domain.item.equipment;
  * Cette classe représente un équipement défensif persisté en base.
  * Elle sert surtout au modèle Character (hors logique combat actuelle).
  */
+/** Équipement défensif persistant (format simple BDD). */
 public class DefensiveEquipment {
     private String type; // "Shield" or "Potion"
     private String name;

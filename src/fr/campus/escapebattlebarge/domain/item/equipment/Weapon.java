@@ -7,6 +7,7 @@ import fr.campus.escapebattlebarge.domain.item.ItemType;
  * Cette classe représente une arme avec une plage de dégâts.
  * Elle est utilisée en combat pour calculer les dégâts du joueur.
  */
+/** Arme équipée par le joueur avec plage de dégâts. */
 public class Weapon extends Item {
 
     private final int minDmg;

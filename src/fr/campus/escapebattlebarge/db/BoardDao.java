@@ -9,21 +9,17 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * Ce DAO gère la persistance des boards et de leurs cellules.
- * Il sert à enregistrer une run et à relire un plateau déjà créé.
- * Entrées: boardId, cellules. Sorties: ids, listes de cellules, résumés de boards.
- */
+/** DAO pour persister les boards et leurs cellules. */
 public class BoardDao {
 
-    // Résumé léger d'un board pour lister les sauvegardes.
+    /** Résumé léger d'un board pour l'écran de chargement. */
     public static class BoardSummary {
         public int id;
         public String name;
         public String createdAt;
     }
 
-    // Représentation d'une cellule du plateau au format BDD.
+    /** Représentation SQL d'une cellule de board. */
     public static class DbCell {
         public int position;
         public String zone;
@@ -35,12 +31,11 @@ public class BoardDao {
 
     private final Db db;
 
-    // Reçoit l'accès base partagé.
     public BoardDao(Db db) {
         this.db = db;
     }
 
-    // Crée un board et renvoie son id.
+    /** Crée un board et renvoie son id. */
     public int createBoard(String name) {
         String sql = "INSERT INTO boards(name) VALUES(?)";
 
@@ -55,14 +50,13 @@ public class BoardDao {
                     return keys.getInt(1);
                 }
             }
-            // ATTENTION : insertion OK mais id manquant => impossible de relier les cellules.
             throw new RuntimeException("Création du board réussie mais ID généré introuvable.");
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la création du board.", e);
         }
     }
 
-    // Sauvegarde toutes les cellules du board (insert ou update si déjà présentes).
+    /** Sauvegarde toutes les cellules d'un board (insert/update). */
     public void saveCells(int boardId, List<DbCell> cells) {
         String sql = "INSERT INTO board_cells(board_id, position, zone, enemy_character_id, treasure, offensive_loot, defensive_loot) " +
                 "VALUES(?,?,?,?,?,?,?) " +
@@ -73,7 +67,6 @@ public class BoardDao {
         try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            // On batch les insert/update pour limiter les allers-retours SQL.
             for (DbCell cell : cells) {
                 statement.setInt(1, boardId);
                 statement.setInt(2, cell.position);
@@ -97,7 +90,7 @@ public class BoardDao {
         }
     }
 
-    // Charge toutes les cellules d'un board triées par position.
+    /** Charge toutes les cellules d'un board triées par position. */
     public List<DbCell> loadCells(int boardId) {
         String sql = "SELECT position, zone, enemy_character_id, treasure, offensive_loot, defensive_loot " +
                 "FROM board_cells WHERE board_id=? ORDER BY position";
@@ -115,7 +108,6 @@ public class BoardDao {
                     cell.zone = rs.getString("zone");
 
                     int enemyId = rs.getInt("enemy_character_id");
-                    // Pourquoi c’est comme ça: getInt renvoie 0 si null, donc on vérifie wasNull.
                     cell.enemyCharacterId = rs.wasNull() ? null : enemyId;
 
                     cell.treasure = rs.getString("treasure");
@@ -131,7 +123,7 @@ public class BoardDao {
         }
     }
 
-    // Liste les boards existants pour l'écran de chargement.
+    /** Liste les boards existants. */
     public List<BoardSummary> listBoards() {
         String sql = "SELECT id, name, created_at FROM boards ORDER BY id DESC";
         List<BoardSummary> boards = new ArrayList<>();

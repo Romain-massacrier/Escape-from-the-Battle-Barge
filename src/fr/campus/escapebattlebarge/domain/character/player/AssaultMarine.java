@@ -7,6 +7,7 @@ import fr.campus.escapebattlebarge.domain.item.equipment.Weapon;
  * Cette classe représente le joueur de type Assault Marine.
  * Elle initialise sa vie de base et son arme de départ.
  */
+/** Implémentation de joueur orientée corps-à-corps. */
 public class AssaultMarine extends Player {
     // Crée un Assault Marine avec Chainsword équipée.
     public AssaultMarine(String name) {

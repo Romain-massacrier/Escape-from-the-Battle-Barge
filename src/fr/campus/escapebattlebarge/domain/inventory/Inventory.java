@@ -13,6 +13,7 @@ import java.util.List;
  * Elle est utilisée par combat et menu inventaire pour ajouter/retirer des objets.
  * Entrées/sorties: objets ajoutés/retirés, accès en lecture aux listes.
  */
+/** Inventaire du joueur (arme équipée, consommables, stock). */
 public class Inventory {
     private Weapon equippedWeapon;                 // 1 arme équipée
     private final List<Consumable> consumables;    // 3 max

@@ -1,4 +1,4 @@
-package fr.campus.escapebattlebarge;
+package fr.campus.escapebattlebarge.app;
 
 import fr.campus.escapebattlebarge.db.BoardDao;
 import fr.campus.escapebattlebarge.db.CharacterDao;
@@ -18,6 +18,7 @@ import fr.campus.escapebattlebarge.ui.screen.TitleScreen;
  * Elle enchaîne écran titre -> intro -> menu -> création/sélection de héros -> lancement de partie.
  * Entrées: actions clavier/écran. Sorties: ouverture d'écrans, création de héros et démarrage du GameApp.
  */
+/** Point d'entrée de l'application Swing et orchestration des écrans initiaux. */
 public class Main {
 
     private static final Db DB = new Db();

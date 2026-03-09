@@ -11,46 +11,20 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * Ce panel dessine tout l'écran de jeu: décor, portraits, infos et console.
- * Il lit uniquement l'état courant (GameState) pour afficher une vue cohérente.
- * Entrée: GameState. Sortie: rendu graphique Swing.
- */
+/** Panel principal de rendu du jeu (décor, portraits, console). */
 public class GamePanel extends JPanel {
 
-    // Petits réglages d'échelle pour que les images rentrent bien.
     private static final double PLAYER_IMAGE_RATIO_SCALE = 0.75;
     private static final double ZONE_IMAGE_RATIO_SCALE = 0.9;
+    private static final Color UI_GREEN = new Color(0, 255, 70);
+    private static final Font UI_FONT = new Font("Monospaced", Font.PLAIN, 24);
 
-    // Plateau (fond)
-    private static final int plateauX = 0;
-    private static final int plateauY = 0;
-    private static final int plateauW = 1536;
-    private static final int plateauH = 1024;
-
-    // Zone 1: portrait joueur
-    private static final int playerImgX = 45;
-    private static final int playerImgY = 190;
-    private static final int playerImgW = 320;
-    private static final int playerImgH = 400;
-
-    // Zone 2: image zone centrale
-    private static final int zoneImgX = 370;
-    private static final int zoneImgY = 180;
-    private static final int zoneImgW = 800;
-    private static final int zoneImgH = 600;
-
-    // Zone 3: portrait ennemi
-    private static final int enemyImgX = 1230;
-    private static final int enemyImgY = 300;
-    private static final int enemyImgW = 190;
-    private static final int enemyImgH = 200;
-
-    // Textes sous portraits
-    private static final int playerTextX = 85;
-    private static final int playerTextY = 550;
-    private static final int enemyTextX = 1220;
-    private static final int enemyTextY = 550;
+    private static final Rectangle PLATEAU_AREA = new Rectangle(0, 0, 1536, 1024);
+    private static final Rectangle PLAYER_IMAGE_AREA = new Rectangle(45, 190, 320, 400);
+    private static final Rectangle ZONE_IMAGE_AREA = new Rectangle(370, 180, 800, 600);
+    private static final Rectangle ENEMY_IMAGE_AREA = new Rectangle(1230, 300, 190, 200);
+    private static final Point PLAYER_TEXT_POINT = new Point(85, 550);
+    private static final Point ENEMY_TEXT_POINT = new Point(1220, 550);
 
     private static final Rectangle CONSOLE_AREA = new Rectangle(400, 700, 880, 250);
     private static final int CONSOLE_PADDING_X = 20;
@@ -83,7 +57,6 @@ public class GamePanel extends JPanel {
     private Image squigPortrait;
     private Image warbossPortrait;
 
-    // Charge les images et prépare la taille de l'écran.
     public GamePanel(GameState state) {
         this.state = state;
 
@@ -104,8 +77,8 @@ public class GamePanel extends JPanel {
         squigPortrait = load("/images/enemies/squig.png");
         warbossPortrait = load("/images/enemies/warboss.png");
 
-        int w = (plateau != null) ? plateau.getWidth(this) : plateauW;
-        int h = (plateau != null) ? plateau.getHeight(this) : plateauH;
+        int w = (plateau != null) ? plateau.getWidth(this) : PLATEAU_AREA.width;
+        int h = (plateau != null) ? plateau.getHeight(this) : PLATEAU_AREA.height;
 
         if (w > 0 && h > 0) {
             setPreferredSize(new Dimension(w, h));
@@ -114,25 +87,20 @@ public class GamePanel extends JPanel {
         setBackground(Color.BLACK);
     }
 
-    // Charge une image; si elle manque, on renvoie null.
+    /** Charge une image depuis les ressources, ou null si absente. */
     private Image load(String path) {
         java.net.URL url = getClass().getResource(path);
         if (url == null) {
-            System.out.println("Image introuvable : " + path);
             return null;
         }
-        Image img = new ImageIcon(url).getImage();
-        System.out.println("OK image: " + path + " (" + img.getWidth(this) + "x" + img.getHeight(this) + ")");
-        return img;
+        return new ImageIcon(url).getImage();
     }
 
-    // Choisit le portrait joueur selon sa classe.
     private Image getPlayerImage() {
         PlayerClass playerClass = state.getPlayer().getPlayerClass();
         return (playerClass == PlayerClass.LIBRARIAN) ? librarianPortrait : spaceMarinePortrait;
     }
 
-    // Choisit l'image de zone selon la case actuelle.
     private Image getZoneImage() {
         int pos = state.getPlayer().getPosition();
         Zone zone = Zone.fromCell(Math.max(1, Math.min(64, pos)));
@@ -147,14 +115,9 @@ public class GamePanel extends JPanel {
         };
     }
 
-    // Choisit le portrait ennemi à afficher.
     private Image getEnemyImage(Enemy enemy) {
-        if (enemy == null) {
-            return null;
-        }
-
-        String name = enemy.getName();
-        if (name == null) {
+        String name = enemy == null ? null : enemy.getName();
+        if (name == null || name.isBlank()) {
             return null;
         }
 
@@ -166,7 +129,6 @@ public class GamePanel extends JPanel {
         return null;
     }
 
-    // Redessine l'écran complet.
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -180,91 +142,81 @@ public class GamePanel extends JPanel {
         g2.dispose();
     }
 
-    // Dessine le fond du plateau.
     private void drawPlateau(Graphics2D g2) {
         if (plateau != null) {
-            g2.drawImage(plateau, plateauX, plateauY, plateauW, plateauH, null);
+            g2.drawImage(plateau, PLATEAU_AREA.x, PLATEAU_AREA.y, PLATEAU_AREA.width, PLATEAU_AREA.height, null);
         }
     }
 
-    // Dessine joueur, zone, ennemi et stats.
     private void drawGameVisuals(Graphics2D g2) {
         Player player = state.getPlayer();
         Enemy enemy = state.getCurrentEnemy();
 
         Image playerImage = getPlayerImage();
         if (playerImage != null) {
-            drawImageKeepingRatio(g2, playerImage, playerImgX, playerImgY, playerImgW, playerImgH, PLAYER_IMAGE_RATIO_SCALE);
+            drawImageKeepingRatio(g2, playerImage, PLAYER_IMAGE_AREA, PLAYER_IMAGE_RATIO_SCALE);
         }
 
         Image zoneImage = getZoneImage();
         if (zoneImage != null) {
-            drawImageFillBox(g2, zoneImage, zoneImgX, zoneImgY, zoneImgW, zoneImgH, ZONE_IMAGE_RATIO_SCALE);
+            drawImageFillBox(g2, zoneImage, ZONE_IMAGE_AREA, ZONE_IMAGE_RATIO_SCALE);
         }
 
         Image enemyImage = getEnemyImage(enemy);
         if (enemyImage != null) {
-            g2.drawImage(enemyImage, enemyImgX, enemyImgY, enemyImgW, enemyImgH, null);
+            g2.drawImage(enemyImage, ENEMY_IMAGE_AREA.x, ENEMY_IMAGE_AREA.y, ENEMY_IMAGE_AREA.width, ENEMY_IMAGE_AREA.height, null);
         }
 
-        g2.setColor(new Color(0, 255, 70));
-        g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
+        g2.setColor(UI_GREEN);
+        g2.setFont(UI_FONT);
 
         String playerWeapon = (player.getInventory().getEquippedWeapon() == null)
                 ? "Aucune"
                 : player.getInventory().getEquippedWeapon().getName();
 
-        String playerName = player.getName();
-        if (playerName == null || playerName.isBlank()) {
-            playerName = "Inconnu";
-        }
-
-        g2.drawString("Nom: " + playerName, playerTextX, playerTextY);
-        g2.drawString("PV: " + player.getHp() + "/" + player.getMaxHp(), playerTextX, playerTextY + 84);
-        g2.drawString("Arme: " + playerWeapon, playerTextX, playerTextY + 118);
+        g2.drawString("Nom: " + safeName(player.getName()), PLAYER_TEXT_POINT.x, PLAYER_TEXT_POINT.y);
+        g2.drawString("PV: " + player.getHp() + "/" + player.getMaxHp(), PLAYER_TEXT_POINT.x, PLAYER_TEXT_POINT.y + 84);
+        g2.drawString("Arme: " + playerWeapon, PLAYER_TEXT_POINT.x, PLAYER_TEXT_POINT.y + 118);
 
         if (enemy != null && enemyImage != null) {
-            String enemyName = enemy.getName();
-            if (enemyName == null || enemyName.isBlank()) {
-                enemyName = "Inconnu";
-            }
-            g2.drawString("Nom: " + enemyName, enemyTextX, enemyTextY);
-            g2.drawString("PV Ennemi: " + enemy.getHp(), enemyTextX, enemyTextY + 84);
+            g2.drawString("Nom: " + safeName(enemy.getName()), ENEMY_TEXT_POINT.x, ENEMY_TEXT_POINT.y);
+            g2.drawString("PV Ennemi: " + enemy.getHp(), ENEMY_TEXT_POINT.x, ENEMY_TEXT_POINT.y + 84);
         }
     }
 
-    // Dessine une image centrée en gardant son ratio.
-    private void drawImageKeepingRatio(Graphics2D g2, Image image, int x, int y, int boxW, int boxH, double ratioScale) {
+    private String safeName(String name) {
+        return (name == null || name.isBlank()) ? "Inconnu" : name;
+    }
+
+    private void drawImageKeepingRatio(Graphics2D g2, Image image, Rectangle box, double ratioScale) {
         int imageW = image.getWidth(null);
         int imageH = image.getHeight(null);
         if (imageW <= 0 || imageH <= 0) {
             return;
         }
 
-        double fitScale = Math.min((double) boxW / imageW, (double) boxH / imageH);
+        double fitScale = Math.min((double) box.width / imageW, (double) box.height / imageH);
         double finalScale = fitScale * ratioScale;
 
         int drawW = Math.max(1, (int) Math.round(imageW * finalScale));
         int drawH = Math.max(1, (int) Math.round(imageH * finalScale));
 
-        int drawX = x + (boxW - drawW) / 2;
-        int drawY = y + (boxH - drawH) / 2;
+        int drawX = box.x + (box.width - drawW) / 2;
+        int drawY = box.y + (box.height - drawH) / 2;
 
         g2.drawImage(image, drawX, drawY, drawW, drawH, null);
     }
 
-    // Dessine une image centrée avec un zoom simple.
-    private void drawImageFillBox(Graphics2D g2, Image image, int x, int y, int boxW, int boxH, double ratioScale) {
-        int drawW = Math.max(1, (int) Math.round(boxW * ratioScale));
-        int drawH = Math.max(1, (int) Math.round(boxH * ratioScale));
+    private void drawImageFillBox(Graphics2D g2, Image image, Rectangle box, double ratioScale) {
+        int drawW = Math.max(1, (int) Math.round(box.width * ratioScale));
+        int drawH = Math.max(1, (int) Math.round(box.height * ratioScale));
 
-        int drawX = x + (boxW - drawW) / 2;
-        int drawY = y + (boxH - drawH) / 2;
+        int drawX = box.x + (box.width - drawW) / 2;
+        int drawY = box.y + (box.height - drawH) / 2;
 
         g2.drawImage(image, drawX, drawY, drawW, drawH, null);
     }
 
-    // Dessine la console du bas avec les dernières infos.
     private void drawConsole(Graphics2D g2) {
         g2.setColor(new Color(0, 255, 70));
         g2.setFont(new Font("Monospaced", Font.PLAIN, 22));
@@ -280,28 +232,7 @@ public class GamePanel extends JPanel {
         textBottom = Math.max(textTop + lineHeight, textBottom);
         int maxVisibleLines = Math.max(1, (textBottom - textTop) / lineHeight);
 
-        String pinnedPrompt = findPinnedPrompt(lines);
-        List<String> visibleLines;
-
-        if (pinnedPrompt == null) {
-            int start = Math.max(0, lines.size() - maxVisibleLines);
-            visibleLines = lines.subList(start, lines.size());
-        } else {
-            // Pourquoi c’est comme ça: on garde le prompt visible pour que le joueur sache quoi taper.
-            visibleLines = new ArrayList<>();
-            visibleLines.add(pinnedPrompt);
-
-            int remainingSlots = Math.max(0, maxVisibleLines - 1);
-            List<String> nonPromptLines = new ArrayList<>();
-            for (String line : lines) {
-                if (!isPromptLine(line)) {
-                    nonPromptLines.add(line);
-                }
-            }
-
-            int start = Math.max(0, nonPromptLines.size() - remainingSlots);
-            visibleLines.addAll(nonPromptLines.subList(start, nonPromptLines.size()));
-        }
+        List<String> visibleLines = getVisibleConsoleLines(lines, maxVisibleLines);
 
         Shape oldClip = g2.getClip();
         int textX = CONSOLE_AREA.x + CONSOLE_PADDING_X + TEXT_OFFSET_X;
@@ -317,7 +248,23 @@ public class GamePanel extends JPanel {
         g2.setClip(oldClip);
     }
 
-    // Donne la zone où on place le champ de saisie.
+    private List<String> getVisibleConsoleLines(List<String> lines, int maxVisibleLines) {
+        String pinnedPrompt = findPinnedPrompt(lines);
+        if (pinnedPrompt == null) {
+            int start = Math.max(0, lines.size() - maxVisibleLines);
+            return lines.subList(start, lines.size());
+        }
+
+        List<String> visibleLines = new ArrayList<>();
+        visibleLines.add(pinnedPrompt);
+
+        int remainingSlots = Math.max(0, maxVisibleLines - 1);
+        List<String> nonPromptLines = lines.stream().filter(line -> !isPromptLine(line)).toList();
+        int start = Math.max(0, nonPromptLines.size() - remainingSlots);
+        visibleLines.addAll(nonPromptLines.subList(start, nonPromptLines.size()));
+        return visibleLines;
+    }
+
     public Rectangle getInputBounds() {
         int inputY = CONSOLE_AREA.y + CONSOLE_AREA.height - INPUT_HEIGHT - CONSOLE_PADDING_BOTTOM + INPUT_OFFSET_Y;
         int inputX = CONSOLE_AREA.x + CONSOLE_PADDING_X + INPUT_OFFSET_X;
@@ -326,7 +273,6 @@ public class GamePanel extends JPanel {
         return new Rectangle(inputX, inputY, inputW, INPUT_HEIGHT);
     }
 
-    // Cherche le dernier prompt à garder affiché.
     private String findPinnedPrompt(List<String> lines) {
         for (int i = lines.size() - 1; i >= 0; i--) {
             String line = lines.get(i);
@@ -337,13 +283,11 @@ public class GamePanel extends JPanel {
         return null;
     }
 
-    // Vérifie si une ligne correspond à un prompt du jeu.
     private boolean isPromptLine(String line) {
         String normalized = stripSessionTag(line);
         return MAIN_PROMPT.equals(normalized) || COMBAT_PROMPT.equals(normalized);
     }
 
-    // Enlève le tag de session pour afficher une ligne propre.
     private String stripSessionTag(String line) {
         if (line == null) {
             return "";

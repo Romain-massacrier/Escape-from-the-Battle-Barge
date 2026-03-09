@@ -10,21 +10,16 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * Ce DAO gère la lecture/écriture des personnages dans la base.
- * Il sert à créer/éditer des héros et à retrouver des ennemis par type.
- * Entrées: objets Character / ids. Sorties: résultats SQL convertis en objets Java.
- */
+/** DAO pour persister les personnages (héros et ennemis) en base. */
 public class CharacterDao {
 
     private final Db db;
 
-    // Reçoit l'accès base partagé.
     public CharacterDao(Db db) {
         this.db = db;
     }
 
-    // Récupère tous les héros triés par id.
+    /** Retourne tous les héros triés par id. */
     public List<Character> getHeroes() {
         String sql = "SELECT id,type,name,life_points,strength,offensive_equipment,defensive_equipment,role " +
                 "FROM characters WHERE role='HERO' ORDER BY id";
@@ -35,20 +30,7 @@ public class CharacterDao {
              ResultSet rs = statement.executeQuery()) {
 
             while (rs.next()) {
-                Character c = mapCharacter(rs);
-                heroes.add(c);
-            }
-
-            System.out.println("Héros trouvés :");
-            for (Character c : heroes) {
-                System.out.printf("%d | %s | %s | HP=%d | STR=%d | OFF=%s | DEF=%s%n",
-                        c.getId(),
-                        c.getName(),
-                        c.getType(),
-                        c.getLifePoints(),
-                        c.getStrength(),
-                        c.getOffensiveEquipmentName(),
-                        c.getDefensiveEquipmentName());
+                heroes.add(mapCharacter(rs));
             }
 
             return heroes;
@@ -57,7 +39,7 @@ public class CharacterDao {
         }
     }
 
-    // Récupère un personnage par id, ou null s'il n'existe pas.
+    /** Retourne un personnage par id, ou null s'il n'existe pas. */
     public Character getCharacterById(int id) {
         String sql = "SELECT id,type,name,life_points,strength,offensive_equipment,defensive_equipment,role " +
                 "FROM characters WHERE id=?";
@@ -78,7 +60,7 @@ public class CharacterDao {
         }
     }
 
-    // Insère un héros en base et renvoie son id généré.
+    /** Crée un héros et renvoie son id généré. */
     public int createHero(Character c) {
         String sql = "INSERT INTO characters(type,name,life_points,strength,offensive_equipment,defensive_equipment,role) " +
                 "VALUES(?,?,?,?,?,?,'HERO')";
@@ -100,14 +82,13 @@ public class CharacterDao {
                     return keys.getInt(1);
                 }
             }
-            // ATTENTION : insertion OK mais id absent => état incohérent côté application.
             throw new RuntimeException("Insertion du héros réussie mais ID généré introuvable.");
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la création du héros.", e);
         }
     }
 
-    // Met à jour les champs éditables d'un héros existant.
+    /** Met à jour les champs éditables d'un héros existant. */
     public void editHero(Character c) {
         String sql = "UPDATE characters SET type=?,name=?,life_points=?,strength=?,offensive_equipment=?,defensive_equipment=? " +
                 "WHERE id=? AND role='HERO'";
@@ -129,7 +110,7 @@ public class CharacterDao {
         }
     }
 
-    // Met à jour uniquement les PV d'un personnage (sync runtime -> BDD).
+    /** Met à jour uniquement les points de vie d'un personnage. */
     public void changeLifePoints(Character c) {
         String sql = "UPDATE characters SET life_points=? WHERE id=?";
 
@@ -144,7 +125,7 @@ public class CharacterDao {
         }
     }
 
-    // Cherche un ennemi par type et renvoie son id, ou null s'il est introuvable.
+    /** Retourne l'id d'un ennemi par type, ou null si introuvable. */
     public Integer findEnemyIdByType(String type) {
         String sql = "SELECT id FROM characters WHERE role='ENEMY' AND type=? ORDER BY id LIMIT 1";
 
@@ -164,7 +145,7 @@ public class CharacterDao {
         }
     }
 
-    // Convertit une ligne SQL en objet Character.
+    /** Convertit une ligne SQL en objet Character. */
     private Character mapCharacter(ResultSet rs) throws SQLException {
         Character c = new Character();
         c.setId(rs.getInt("id"));

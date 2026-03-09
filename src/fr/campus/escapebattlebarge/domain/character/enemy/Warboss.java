@@ -1,8 +1,10 @@
 package fr.campus.escapebattlebarge.domain.character.enemy;
 
-/*
- * Placeholder pour un type de boss dédié.
- * Pourquoi c’est comme ça: le boss runtime est aujourd'hui créé via EnemyFactory.
- */
-public class Warboss {
+import fr.campus.escapebattlebarge.domain.character.Enemy;
+
+/** Boss final de type Warboss. */
+public class Warboss extends Enemy {
+    public Warboss() {
+        super("Warboss", 45, 5, 10, true);
+    }
 }

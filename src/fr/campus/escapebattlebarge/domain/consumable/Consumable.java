@@ -7,6 +7,7 @@ import fr.campus.escapebattlebarge.domain.item.ItemType;
  * Cette classe représente un consommable de soin.
  * Elle est utilisée en combat pour restaurer des PV.
  */
+/** Objet consommable qui rend des points de vie. */
 public class Consumable extends Item {
     private final int healAmount;
 

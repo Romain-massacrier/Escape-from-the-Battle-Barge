@@ -13,20 +13,14 @@ import fr.campus.escapebattlebarge.game.combat.CombatEngine.InputProvider;
 import fr.campus.escapebattlebarge.game.board.Tile;
 import fr.campus.escapebattlebarge.game.board.TileType;
 import fr.campus.escapebattlebarge.game.board.Zone;
-import fr.campus.escapebattlebarge.game.factory.EnemyFactory;
 import fr.campus.escapebattlebarge.game.random.Dice;
 
-/*
- * Cette classe orchestre un tour de jeu côté UI: déplacement, combat, trésor et inventaire.
- * Elle est appelée par l'écran principal quand le joueur clique sur "lancer" ou "inventaire".
- * Entrées: choix utilisateur (InputProvider). Sorties: logs UI, état du joueur et sync BDD des PV.
- */
+/** Contrôleur d'un tour de jeu (déplacement, combat, trésor, inventaire). */
 public class GameController {
 
     private static final String MAIN_PROMPT = "1 lancer dé | 2 inventaire";
 
     private final Dice dice = new Dice();
-    private final EnemyFactory enemyFactory = new EnemyFactory();
     private final CombatEngine combat = new CombatEngine(dice);
 
     private final GameState state;
@@ -34,12 +28,10 @@ public class GameController {
     private Character currentHero;
     private boolean extractionAlertPlayed = false;
 
-    // Construit le contrôleur avec seulement l'état de jeu (mode sans BDD).
     public GameController(GameState state) {
         this(state, null, null);
     }
 
-    // Construit le contrôleur complet avec sync possible vers la base.
     public GameController(GameState state, CharacterDao characterDao, Character currentHero) {
         this.state = state;
         this.characterDao = characterDao;
@@ -48,16 +40,11 @@ public class GameController {
         refreshStatusLine();
     }
 
-    // Met à jour le héros courant utilisé pour synchroniser les PV en base.
     public void setCurrentHero(Character currentHero) {
         this.currentHero = currentHero;
     }
 
-    // Test manuel:
-    // - Appuyer sur 1 puis Entrée.
-    // - Vérifier que la console est remplacée (clear) au début du tour,
-    //   et que les nouvelles lignes s'affichent sans s'empiler sous l'ancien tour.
-    // Gère l'action "lancer le dé": déplacement, événements de case, combat et statut UI.
+    /** Action principale: lancer le dé, appliquer la case, puis rafraîchir l'UI. */
     public void onRoll(InputProvider input) {
         Player p = state.getPlayer();
         int hpBefore = p.getHp();
@@ -70,7 +57,6 @@ public class GameController {
             int oldPos = p.getPosition();
             Zone oldZone = Zone.fromCell(Math.max(1, Math.min(64, oldPos)));
 
-            // Règle de déplacement principale: avance de 1 à 6 cases.
             int roll = dice.rollD6();
 
             int newPos = p.getPosition() + roll;
@@ -78,14 +64,13 @@ public class GameController {
 
             Zone newZone = Zone.fromCell(Math.max(1, Math.min(64, newPos)));
             if (!extractionAlertPlayed && oldZone != Zone.EXTRACTION && newZone == Zone.EXTRACTION) {
-                // On joue l'alerte une seule fois à l'entrée dans la zone finale.
                 extractionAlertPlayed = true;
                 state.requestExtractionAlertPlayback();
             }
 
             if (newPos >= 64) {
                 state.log(session, "Tu atteins la zone d’extraction. Un boss t’attend.");
-                boolean win = combat.fight(p, enemyFactory.createBoss(), msg -> state.log(session, msg), input);
+                boolean win = combat.fight(p, TileType.ENEMY_WARBOSS.createEnemy(), msg -> state.log(session, msg), input);
                 if (win) {
                     state.log(session, "Victoire. Extraction réussie.");
                 }
@@ -93,10 +78,8 @@ public class GameController {
                     handleDefeat(input, session);
                     return;
                 }
-                if (p.isAlive()) {
-                    state.clearConsole();
-                    showMainPrompt(session);
-                }
+                state.clearConsole();
+                showMainPrompt(session);
                 refreshStatusLine(session, roll);
                 return;
             }
@@ -104,7 +87,6 @@ public class GameController {
             Tile tile = state.getBoard().getTile(newPos);
 
             if (tile == null) {
-                // ATTENTION : case absente => on sort proprement pour éviter un plantage plus loin.
                 showMainPrompt(session);
                 refreshStatusLine(session, roll);
                 return;
@@ -128,7 +110,7 @@ public class GameController {
         }
     }
 
-    // Sauvegarde les PV du héros en base seulement s'ils ont vraiment changé.
+    /** Synchronise les PV du héros en base s'ils ont changé. */
     private void syncLifePointsIfChanged(int hpBefore) {
         if (characterDao == null || currentHero == null) {
             return;
@@ -143,12 +125,11 @@ public class GameController {
             currentHero.setLifePoints(hpAfter);
             characterDao.changeLifePoints(currentHero);
         } catch (RuntimeException e) {
-            // ATTENTION : si la BDD échoue, le jeu continue mais la sauvegarde des PV est perdue.
             state.log("Erreur DB: impossible de sauvegarder les PV du héros.");
         }
     }
 
-    // Ouvre l'inventaire, laisse équiper une arme depuis le stock, puis revient au prompt principal.
+    /** Ouvre l'inventaire et permet d'équiper une arme depuis le stock. */
     public void onInventory(InputProvider input) {
         Player p = state.getPlayer();
         Inventory inv = p.getInventory();
@@ -215,28 +196,25 @@ public class GameController {
         refreshStatusLine();
     }
 
-    // Affiche le prompt principal dans la console de jeu.
     private void showMainPrompt() {
         state.logMainPrompt(MAIN_PROMPT);
     }
 
-    // Affiche le prompt principal pour une session de console donnée.
     private void showMainPrompt(long session) {
         state.logMainPrompt(session, MAIN_PROMPT);
     }
 
-    // Nettoie la console puis réaffiche le prompt principal.
     private void returnToMainPrompt() {
         state.clearConsole();
         showMainPrompt();
     }
 
-    // Lance et résout un combat pour une case ennemie.
+    /** Lance et résout un combat pour une case ennemie. */
     private void handleEnemy(TileType tileType, InputProvider input, long session) {
         Player p = state.getPlayer();
         state.log(session, "Alerte: contact hostile.");
 
-        Enemy e = enemyFactory.createForTileType(tileType);
+        Enemy e = tileType.createEnemy();
         state.setCurrentEnemy(e);
 
         boolean win = combat.fight(p, e, msg -> state.log(session, msg), input);
@@ -263,7 +241,6 @@ public class GameController {
             if (ok) {
                 state.log(session, "Tu obtiens: " + cons.getName());
             } else {
-                // Pourquoi c’est comme ça: les consommables sont limités, on envoie le surplus dans le stock.
                 state.log(session, "Consommables pleins. Stock: " + cons.getName());
                 p.getInventory().addToStash(cons);
             }
@@ -271,13 +248,12 @@ public class GameController {
             return;
         }
 
-        // Weapon ou Power
         p.getInventory().addToStash(item);
         state.log(session, "Tu obtiens: " + item.getName() + " (stock)");
         tile.setType(TileType.EMPTY);
     }
 
-    // Gère l'écran de défaite et déclenche le retour menu.
+    /** Gère la défaite et demande le retour au menu principal. */
     private void handleDefeat(InputProvider input, long session) {
         state.log(session, "Vous avez perdu.");
         state.log(session, "appuyer sur entrer pour revenir au menu");
@@ -285,33 +261,25 @@ public class GameController {
         state.requestReturnToMainMenu();
     }
 
-    // Met à jour la ligne de statut (PV, position, zone) hors session explicite.
     private void refreshStatusLine() {
-        Player p = state.getPlayer();
-        Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
-
-        state.logStatus("Statut: PV " + p.getHp() + "/" + p.getMaxHp()
-                + " | Case " + p.getPosition()
-            + " | " + zone.getLabel());
+        state.logStatus(buildStatusLine(null));
     }
 
-    // Met à jour la ligne de statut pour une session donnée.
     private void refreshStatusLine(long session) {
+        state.logStatus(session, buildStatusLine(null));
+    }
+
+    private void refreshStatusLine(long session, int roll) {
+        state.logStatus(session, buildStatusLine(roll));
+    }
+
+    /** Construit la ligne de statut affichée dans la console. */
+    private String buildStatusLine(Integer roll) {
         Player p = state.getPlayer();
         Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
-
-        state.logStatus(session, "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
-                + " | Case " + p.getPosition()
-            + " | " + zone.getLabel());
-        }
-
-        // Met à jour la ligne de statut en affichant aussi la valeur du dernier dé.
-        private void refreshStatusLine(long session, int roll) {
-        Player p = state.getPlayer();
-        Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
-
-        state.logStatus(session, "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
-            + " | Case " + p.getPosition() + " (+" + roll + ")"
-            + " | " + zone.getLabel());
+        String rollPart = (roll == null) ? "" : " (+" + roll + ")";
+        return "Statut: PV " + p.getHp() + "/" + p.getMaxHp()
+                + " | Case " + p.getPosition() + rollPart
+                + " | " + zone.getLabel();
     }
 }

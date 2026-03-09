@@ -9,6 +9,7 @@ import java.util.Set;
  * Elle est utilisée au démarrage d'une partie pour construire un board cohérent.
  * Entrées/sorties: expose des ensembles de cases + méthodes de validation.
  */
+/** Répartition statique des cases ennemis/trésors sur le plateau. */
 public final class BoardLayout {
 
     // Empêche l'instanciation: c'est une classe utilitaire statique.

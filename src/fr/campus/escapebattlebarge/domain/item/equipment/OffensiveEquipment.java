@@ -4,6 +4,7 @@ package fr.campus.escapebattlebarge.domain.item.equipment;
  * Cette classe représente un équipement offensif persisté en base.
  * Elle sert surtout au modèle Character (hors runtime combat direct).
  */
+/** Équipement offensif persistant (format simple BDD). */
 public class OffensiveEquipment {
     private String type; // "Weapon" or "Spell"
     private String name;

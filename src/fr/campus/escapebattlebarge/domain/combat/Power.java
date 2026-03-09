@@ -8,6 +8,7 @@ import fr.campus.escapebattlebarge.domain.item.ItemType;
  * Elle peut ajouter des dégâts bonus pendant un combat.
  * Entrées/sorties: min/max dégâts du pouvoir.
  */
+/** Objet de type pouvoir offensif utilisable en combat. */
 public class Power extends Item {
     private final int minDmg;
     private final int maxDmg;

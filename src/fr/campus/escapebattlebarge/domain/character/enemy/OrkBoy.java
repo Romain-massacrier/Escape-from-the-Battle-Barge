@@ -1,8 +1,10 @@
 package fr.campus.escapebattlebarge.domain.character.enemy;
 
-/*
- * Placeholder pour un type d'ennemi dédié.
- * Pourquoi c’est comme ça: la logique actuelle utilise surtout EnemyFactory + Enemy générique.
- */
-public class OrkBoy {
+import fr.campus.escapebattlebarge.domain.character.Enemy;
+
+/** Ennemi standard de type OrkBoy. */
+public class OrkBoy extends Enemy {
+    public OrkBoy() {
+        super("OrkBoy", 16, 3, 6, false);
+    }
 }

@@ -13,6 +13,7 @@ import fr.campus.escapebattlebarge.game.board.Zone;
  * Elle applique des chances simples selon la classe du joueur.
  * Entrées: joueur + zone. Sortie: item (consommable, arme ou pouvoir).
  */
+/** Tables de génération de butin selon contexte de jeu. */
 public class LootTables {
 
     // Tire un trésor pseudo-aléatoire selon le profil du joueur.

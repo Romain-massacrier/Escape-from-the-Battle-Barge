@@ -11,72 +11,38 @@ import fr.campus.escapebattlebarge.game.random.Dice;
 
 import java.util.function.Consumer;
 
-/*
- * Cette classe gère un combat tour par tour entre le joueur et un ennemi.
- * Elle est appelée quand le joueur tombe sur une case ennemie (ou le boss final).
- * Entrées: choix utilisateur (attaquer/potion/fuir). Sorties: logs de combat + PV/position modifiés.
- */
+/** Moteur de combat tour par tour joueur vs ennemi. */
 public class CombatEngine {
     private final Dice dice;
 
-    // Reçoit le générateur aléatoire utilisé pour les dégâts et la fuite.
     public CombatEngine(Dice dice) {
         this.dice = dice;
     }
 
-    // Lance la boucle de combat et renvoie true si le joueur survit au combat.
+    /** Exécute un combat; renvoie true si le joueur survit. */
     public boolean fight(Player player, Enemy enemy, Consumer<String> log, InputProvider input) {
         log.accept("Action: Combat engagé contre " + enemy.getName() + " (PV " + enemy.getHp() + ")");
 
-        // Boucle principale: continue tant que les deux sont en vie.
         while (player.isAlive() && enemy.isAlive()) {
             log.accept("1 Attaquer | 2 Potion | 3 Fuir");
 
             String choice = input.readChoice();
 
-            if ("1".equals(choice)) {
-                // Calcul des dégâts joueur, puis riposte ennemie s'il survit.
-                int dmg = computePlayerDamage(player);
-                enemy.damage(dmg);
-                String playerAction = "Tu frappes: -" + dmg + " PV";
-
-                if (!enemy.isAlive()) {
-                    log.accept("Action: " + playerAction);
-                    break;
+            switch (choice) {
+                case "1" -> handleAttackTurn(player, enemy, log);
+                case "2" -> {
+                    if (tryUsePotion(player, log, input) && enemy.isAlive()) {
+                        applyEnemyCounterAttack(player, enemy, log, "Potion utilisée");
+                    }
                 }
-
-                int enemyDmg = dice.between(enemy.getMinDmg(), enemy.getMaxDmg());
-                player.damage(enemyDmg);
-                String enemyAction = enemy.getName() + " frappe: -" + enemyDmg + " PV";
-                log.accept("Action: " + playerAction + " | " + enemyAction);
-                continue;
-
-            } else if ("2".equals(choice)) {
-                // Utiliser une potion consomme le tour, l'ennemi peut ensuite riposter.
-                boolean used = tryUsePotion(player, log, input);
-                if (!used) continue;
-
-                if (!enemy.isAlive()) {
-                    break;
+                case "3" -> {
+                    int back = dice.between(1, 3);
+                    player.setPosition(Math.max(1, player.getPosition() - back));
+                    log.accept("Action: Fuite! Recul de " + back + " cases. Nouvelle case: " + player.getPosition());
+                    waitForEnterToContinue(log, input);
+                    return false;
                 }
-
-                int enemyDmg = dice.between(enemy.getMinDmg(), enemy.getMaxDmg());
-                player.damage(enemyDmg);
-                String enemyAction = enemy.getName() + " frappe: -" + enemyDmg + " PV";
-                log.accept("Action: Potion utilisée | " + enemyAction);
-                continue;
-
-            } else if ("3".equals(choice)) {
-                // Fuite avec pénalité simple: tu recules de 1 à 3 cases
-                int back = dice.between(1, 3);
-                player.setPosition(Math.max(1, player.getPosition() - back));
-                log.accept("Action: Fuite! Recul de " + back + " cases. Nouvelle case: " + player.getPosition());
-                waitForEnterToContinue(log, input);
-                return false;
-
-            } else {
-                log.accept("Action: Choix invalide.");
-                continue;
+                default -> log.accept("Action: Choix invalide.");
             }
         }
 
@@ -89,22 +55,38 @@ public class CombatEngine {
         return true;
     }
 
-    // Pause simple pour laisser le joueur lire le résultat d'un échange.
+    private void handleAttackTurn(Player player, Enemy enemy, Consumer<String> log) {
+        int dmg = computePlayerDamage(player);
+        enemy.damage(dmg);
+        String playerAction = "Tu frappes: -" + dmg + " PV";
+
+        if (!enemy.isAlive()) {
+            log.accept("Action: " + playerAction);
+            return;
+        }
+        applyEnemyCounterAttack(player, enemy, log, playerAction);
+    }
+
+    private void applyEnemyCounterAttack(Player player, Enemy enemy, Consumer<String> log, String firstAction) {
+        int enemyDmg = dice.between(enemy.getMinDmg(), enemy.getMaxDmg());
+        player.damage(enemyDmg);
+        log.accept("Action: " + firstAction + " | " + enemy.getName() + " frappe: -" + enemyDmg + " PV");
+    }
+
+    /** Pause pour laisser le joueur lire le dernier message. */
     private void waitForEnterToContinue(Consumer<String> log, InputProvider input) {
         log.accept("Appuie sur Entrée pour continuer.");
         input.readChoice();
     }
 
-    // Calcule les dégâts du joueur selon arme équipée et bonus éventuel de pouvoir.
+    /** Calcule les dégâts du joueur (arme + éventuel bonus psy). */
     private int computePlayerDamage(Player player) {
         Weapon w = player.getInventory().getEquippedWeapon();
         int base = (w == null) ? dice.between(1, 3) : dice.between(w.getMinDmg(), w.getMaxDmg());
 
-        // Si Librarian et possède un pouvoir, on a une petite chance d’ajouter du psy
         if (player.getPlayerClass() == PlayerClass.LIBRARIAN) {
             boolean hasPower = player.getInventory().getStash().stream().anyMatch(i -> i instanceof Power);
             if (hasPower && dice.between(1, 100) <= 30) {
-                // Prend le premier pouvoir du stash
                 Power p = (Power) player.getInventory().getStash().stream()
                         .filter(i -> i instanceof Power)
                         .findFirst()
@@ -117,7 +99,7 @@ public class CombatEngine {
         return base;
     }
 
-    // Essaie de consommer une potion choisie par le joueur, renvoie true si succès.
+    /** Essaie de consommer une potion choisie par le joueur. */
     private boolean tryUsePotion(Player player, Consumer<String> log, InputProvider input) {
         Inventory inv = player.getInventory();
         if (inv.getConsumables().isEmpty()) {
@@ -138,7 +120,6 @@ public class CombatEngine {
             return false;
         }
 
-        // ATTENTION : index invalide => removeConsumableAt renvoie null, donc on protège juste après.
         Consumable used = inv.removeConsumableAt(idx);
         if (used == null) {
             log.accept("Action: Choix invalide.");
@@ -150,7 +131,7 @@ public class CombatEngine {
         return true;
     }
 
-    // Fournit un choix texte (utilisé par console ou UI graphique).
+    /** Fournit un choix texte (UI ou console). */
     public interface InputProvider {
         String readChoice();
     }

@@ -6,7 +6,7 @@ Jeu Java (Swing) inspiré de l’univers Warhammer 40K : vous incarnez un Space 
 
 - **Type** : jeu solo en Java
 - **Interface** : Swing (écrans titre, intro, sélection de personnage, jeu)
-- **Point d’entrée** : `src/fr/campus/escapebattlebarge/app/Main.java`
+- **Point d’entrée** : `src/fr/campus/escapebattlebarge/Main.java`
 - **Classes jouables** : Assault Marine, Librarian
 
 ## Architecture du projet
@@ -39,7 +39,7 @@ flowchart TD
 
     L --> M[GameController]
     M --> N[CombatEngine]
-    M --> O[EnemyFactory]
+    M --> O[TileType.createEnemy]
     M --> P[LootTables]
 
     subgraph Domain
@@ -70,7 +70,7 @@ Depuis la racine du projet :
 ```bash
 mkdir -p out
 javac -d out $(find src -name "*.java")
-java -cp out fr.campus.escapebattlebarge.Main
+java -cp out fr.campus.escapebattlebarge.app.Main
 ```
 
 ## Arborescence simplifiée
@@ -87,4 +87,4 @@ src/
 
 ## État du projet
 
-Le projet contient à la fois des éléments console (ex: `game/Game.java`, `ui/Menu.java`) et une version graphique Swing utilisée par le point d’entrée actuel.
+Le projet est orienté interface graphique Swing (écrans, contrôleurs, rendu en temps réel).

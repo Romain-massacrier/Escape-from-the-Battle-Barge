@@ -7,6 +7,7 @@ import java.util.*;
  * Elle est utilisée pour savoir ce qu'il y a sur une case (ennemi, trésor, vide).
  * Entrée: index de case demandé. Sortie: Tile correspondante.
  */
+/** Plateau de jeu 8x8 contenant les cases et leurs types. */
 public class Board {
     private final Map<Integer, Tile> tiles = new HashMap<>();
 

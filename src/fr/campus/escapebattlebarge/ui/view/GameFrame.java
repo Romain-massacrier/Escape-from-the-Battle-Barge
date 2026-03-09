@@ -9,14 +9,13 @@ import fr.campus.escapebattlebarge.ui.audio.AudioManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-/*
- * Cette fenêtre relie l'UI graphique au GameController.
- * Elle lit les saisies du joueur et les transforme en actions de jeu.
- * Entrées: texte saisi. Sorties: appels contrôleur, repaint UI, transitions menu/audio.
- */
+/** Fenêtre de jeu Swing: saisie utilisateur + orchestration du contrôleur. */
 public class GameFrame extends JFrame implements CombatEngine.InputProvider {
 
     private final GameState state;
@@ -29,7 +28,6 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
     private volatile boolean actionInProgress = false;
     private volatile boolean waitingForChoice = false;
 
-    // Monte l'écran de jeu et branche la saisie joueur.
     public GameFrame(GameState state, CharacterDao characterDao, Character currentHero, Runnable onReturnToMenu) {
         super("Escape from the Battle Barge");
 
@@ -50,8 +48,36 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
         panel.setBounds(0, 0, size.width, size.height);
         layered.add(panel, Integer.valueOf(0));
 
-        Rectangle r = panel.getInputBounds();
-        inputField.setBounds(r);
+        configureInputField(layered);
+
+        setContentPane(layered);
+        pack();
+        setLocationRelativeTo(null);
+        disableMouseInput();
+        setVisible(true);
+
+        refreshAndFocusInput();
+
+        AudioManager.startLoopAudio("/audio/game.wav");
+    }
+
+    private void disableMouseInput() {
+        JPanel blocker = new JPanel();
+        blocker.setOpaque(false);
+
+        blocker.addMouseListener(new MouseAdapter() {
+        });
+        blocker.addMouseMotionListener(new MouseMotionAdapter() {
+        });
+        blocker.addMouseWheelListener((MouseWheelEvent e) -> {
+        });
+
+        setGlassPane(blocker);
+        blocker.setVisible(true);
+    }
+
+    private void configureInputField(JLayeredPane layered) {
+        inputField.setBounds(panel.getInputBounds());
         inputField.setOpaque(false);
         inputField.setBorder(null);
         inputField.setForeground(new Color(0, 255, 70));
@@ -60,51 +86,38 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
         inputField.setHorizontalAlignment(JTextField.CENTER);
         layered.add(inputField, Integer.valueOf(1));
 
-        inputField.addActionListener(e -> {
-            String raw = inputField.getText();
-            String v = (raw == null) ? "" : raw.trim();
-            inputField.setText("");
+        inputField.addActionListener(e -> onInputSubmitted());
+    }
 
-            if (waitingForChoice) {
-                // Ici on transmet la réponse au combat/inventaire qui attend.
-                inputs.offer(v);
-                return;
-            }
+    private void onInputSubmitted() {
+        String value = inputField.getText();
+        String choice = value == null ? "" : value.trim();
+        inputField.setText("");
 
-            if (v.isEmpty()) return;
+        if (waitingForChoice) {
+            inputs.offer(choice);
+            return;
+        }
 
-            if (actionInProgress) {
-                // ATTENTION : évite de lancer deux actions en même temps.
-                return;
-            }
+        if (choice.isEmpty() || actionInProgress) {
+            return;
+        }
 
-            if ("1".equals(v)) {
-                runAction(() -> controller.onRoll(GameFrame.this));
-            } else if ("2".equals(v)) {
-                runAction(() -> controller.onInventory(GameFrame.this));
-            } else {
+        switch (choice) {
+            case "1" -> runAction(() -> controller.onRoll(this));
+            case "2" -> runAction(() -> controller.onInventory(this));
+            default -> {
                 state.log("Choix invalide. 1 lancer dé | 2 inventaire");
                 SwingUtilities.invokeLater(panel::repaint);
             }
-        });
-
-        setContentPane(layered);
-        pack();
-        setLocationRelativeTo(null);
-        setVisible(true);
-
-        SwingUtilities.invokeLater(() -> inputField.requestFocusInWindow());
-
-        AudioManager.startLoopAudio("/audio/game.wav");
+        }
     }
 
-    // Nettoie les saisies restantes avant une nouvelle action.
     private void flushPendingInputs() {
         inputs.clear();
         inputField.setText("");
     }
 
-    // Lance une action de jeu puis remet l'écran à jour.
     private void runAction(Runnable action) {
         actionInProgress = true;
         flushPendingInputs();
@@ -130,17 +143,21 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
                 }
 
                 actionInProgress = false;
-                SwingUtilities.invokeLater(panel::repaint);
-                SwingUtilities.invokeLater(() -> inputField.requestFocusInWindow());
+                refreshAndFocusInput();
             }
         }).start();
     }
 
-    // Attend un choix texte (utilisé par le moteur de combat).
+    private void refreshAndFocusInput() {
+        SwingUtilities.invokeLater(() -> {
+            panel.repaint();
+            inputField.requestFocusInWindow();
+        });
+    }
+
     @Override
     public String readChoice() {
-        SwingUtilities.invokeLater(panel::repaint);
-        SwingUtilities.invokeLater(() -> inputField.requestFocusInWindow());
+        refreshAndFocusInput();
         waitingForChoice = true;
         try {
             return inputs.take();

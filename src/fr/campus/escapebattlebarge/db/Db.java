@@ -9,6 +9,7 @@ import java.sql.SQLException;
  * Elle est utilisée par les DAO pour exécuter les requêtes SQL.
  * Entrée: aucune (config statique). Sortie: Connection JDBC.
  */
+/** Fournit une connexion JDBC vers la base du jeu. */
 public class Db {
 
     private static final String URL = "jdbc:mariadb://localhost:3306/warhammer_game";

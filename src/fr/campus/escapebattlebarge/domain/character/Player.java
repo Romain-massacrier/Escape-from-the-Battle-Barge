@@ -8,6 +8,7 @@ import fr.campus.escapebattlebarge.domain.character.player.PlayerClass;
  * Elle stocke ses PV, sa position et son inventaire utilisés par le gameplay.
  * Entrées/sorties: dégâts, soins, déplacement et accès état joueur.
  */
+/** Modèle runtime du joueur contrôlé pendant la partie. */
 public abstract class Player {
 
     private final String name;

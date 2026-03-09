@@ -4,6 +4,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
 import java.net.URL;
 import java.util.function.Consumer;
 
@@ -12,6 +15,7 @@ import java.util.function.Consumer;
  * Elle sert juste avant de démarrer une partie pour choisir le type de héros.
  * Entrées: touches/saisie. Sorties: callback avec le nom selon la classe choisie.
  */
+/** Écran Swing de sélection de classe puis saisie du nom du héros. */
 public class CharacterSelectScreen {
 
     private enum Step {
@@ -40,6 +44,7 @@ public class CharacterSelectScreen {
 
             frame.setSize(bgIcon.getIconWidth(), bgIcon.getIconHeight());
             frame.setLocationRelativeTo(null);
+            disableMouseInput(frame);
 
             Color green = new Color(0, 255, 120);
 
@@ -72,7 +77,7 @@ public class CharacterSelectScreen {
             String librarianText =
                     "LIBRARIAN\n\n" +
                             "Sa pensée tranche plus profond qu’aucune lame.\n\n" +
-                            "Armements : Bâton de force, Tempête psychique.\n" +
+                        "Armements : Bâton de force.\n" +
                             "Attaque : +8 - Vie : +6\n";
 
             JTextArea marineInfo = makeInfoArea(green, 18, true);
@@ -213,6 +218,22 @@ public class CharacterSelectScreen {
             frame.setVisible(true);
             input.requestFocusInWindow();
         });
+    }
+
+    // Bloque toute interaction souris pour garder un écran 100% clavier.
+    private void disableMouseInput(JFrame frame) {
+        JPanel blocker = new JPanel();
+        blocker.setOpaque(false);
+
+        blocker.addMouseListener(new MouseAdapter() {
+        });
+        blocker.addMouseMotionListener(new MouseMotionAdapter() {
+        });
+        blocker.addMouseWheelListener((MouseWheelEvent e) -> {
+        });
+
+        frame.setGlassPane(blocker);
+        blocker.setVisible(true);
     }
 
     // Crée une zone texte de présentation avec le style terminal vert.

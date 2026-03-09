@@ -5,6 +5,7 @@ package fr.campus.escapebattlebarge.game.board;
  * Elle est utilisée par le moteur pour savoir ce qui se passe quand le joueur arrive dessus.
  * Entrées/sorties: lit/écrit le type de case (ennemi, trésor, vide).
  */
+/** Case individuelle du plateau (position, zone, type). */
 public class Tile {
     private final int index;       // 1..64
     private final Zone zone;

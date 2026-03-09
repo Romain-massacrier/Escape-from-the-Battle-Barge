@@ -7,6 +7,7 @@ import fr.campus.escapebattlebarge.domain.item.equipment.Weapon;
  * Cette classe représente le joueur de type Librarian.
  * Elle initialise sa vie de base et son bâton de départ.
  */
+/** Implémentation de joueur orientée pouvoirs psychiques. */
 public class Librarian extends Player {
     // Crée un Librarian avec Bâton de force équipé.
     public Librarian(String name) {

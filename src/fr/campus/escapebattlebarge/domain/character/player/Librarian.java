@@ -11,8 +11,13 @@ import fr.campus.escapebattlebarge.domain.item.equipment.Weapon;
 public class Librarian extends Player {
     // Crée un Librarian avec Bâton de force équipé.
     public Librarian(String name) {
-        super(name, PlayerClass.LIBRARIAN, 28);
+        super(name, 28);
         Weapon staff = new Weapon("Bâton de force", 3, 7);
         getInventory().equipWeapon(staff);
+    }
+
+    @Override
+    public boolean isLibrarian() {
+        return true;
     }
 }

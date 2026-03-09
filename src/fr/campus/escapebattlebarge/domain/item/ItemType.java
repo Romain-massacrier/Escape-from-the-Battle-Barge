@@ -7,5 +7,4 @@ package fr.campus.escapebattlebarge.domain.item;
 public enum ItemType {
     WEAPON,
     CONSUMABLE,
-    POWER,
 }

@@ -2,8 +2,6 @@ package fr.campus.escapebattlebarge.game.combat;
 
 import fr.campus.escapebattlebarge.domain.character.Enemy;
 import fr.campus.escapebattlebarge.domain.character.Player;
-import fr.campus.escapebattlebarge.domain.character.player.PlayerClass;
-import fr.campus.escapebattlebarge.domain.combat.Power;
 import fr.campus.escapebattlebarge.domain.consumable.Consumable;
 import fr.campus.escapebattlebarge.domain.inventory.Inventory;
 import fr.campus.escapebattlebarge.domain.item.equipment.Weapon;
@@ -82,21 +80,7 @@ public class CombatEngine {
     /** Calcule les dégâts du joueur (arme + éventuel bonus psy). */
     private int computePlayerDamage(Player player) {
         Weapon w = player.getInventory().getEquippedWeapon();
-        int base = (w == null) ? dice.between(1, 3) : dice.between(w.getMinDmg(), w.getMaxDmg());
-
-        if (player.getPlayerClass() == PlayerClass.LIBRARIAN) {
-            boolean hasPower = player.getInventory().getStash().stream().anyMatch(i -> i instanceof Power);
-            if (hasPower && dice.between(1, 100) <= 30) {
-                Power p = (Power) player.getInventory().getStash().stream()
-                        .filter(i -> i instanceof Power)
-                        .findFirst()
-                        .orElse(null);
-                if (p != null) {
-                    base += dice.between(p.getMinDmg(), p.getMaxDmg());
-                }
-            }
-        }
-        return base;
+        return (w == null) ? dice.between(1, 3) : dice.between(w.getMinDmg(), w.getMaxDmg());
     }
 
     /** Essaie de consommer une potion choisie par le joueur. */

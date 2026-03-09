@@ -13,6 +13,7 @@ import fr.campus.escapebattlebarge.game.combat.CombatEngine.InputProvider;
 import fr.campus.escapebattlebarge.game.board.Tile;
 import fr.campus.escapebattlebarge.game.board.TileType;
 import fr.campus.escapebattlebarge.game.board.Zone;
+import fr.campus.escapebattlebarge.domain.item.equipment.Potion;
 import fr.campus.escapebattlebarge.game.random.Dice;
 
 /** Contrôleur d'un tour de jeu (déplacement, combat, trésor, inventaire). */
@@ -22,6 +23,7 @@ public class GameController {
 
     private final Dice dice = new Dice();
     private final CombatEngine combat = new CombatEngine(dice);
+    private final Potion potion = new Potion();
 
     private final GameState state;
     private final CharacterDao characterDao;
@@ -230,13 +232,8 @@ public class GameController {
         Player p = state.getPlayer();
         state.log(session, "Découverte: trésor.");
 
-        Item item = switch (tile.getType()) {
-            case TREASURE_POTION -> new Consumable("Potion standard", 12);
-            case TREASURE_BIG_POTION -> new Consumable("Grande potion", 24);
-            default -> throw new IllegalStateException("Type de trésor inattendu: " + tile.getType());
-        };
-
-        if (item instanceof Consumable cons) {
+        Zone zone = Zone.fromCell(Math.max(1, Math.min(64, p.getPosition())));
+        for (Consumable cons : potion.rollTreasurePack(p, zone)) {
             boolean ok = p.getInventory().addConsumable(cons);
             if (ok) {
                 state.log(session, "Tu obtiens: " + cons.getName());
@@ -244,12 +241,8 @@ public class GameController {
                 state.log(session, "Consommables pleins. Stock: " + cons.getName());
                 p.getInventory().addToStash(cons);
             }
-            tile.setType(TileType.EMPTY);
-            return;
         }
 
-        p.getInventory().addToStash(item);
-        state.log(session, "Tu obtiens: " + item.getName() + " (stock)");
         tile.setType(TileType.EMPTY);
     }
 

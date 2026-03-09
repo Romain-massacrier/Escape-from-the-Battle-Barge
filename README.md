@@ -14,7 +14,7 @@ Jeu Java (Swing) inspiré de l’univers Warhammer 40K : vous incarnez un Space 
 - `app/` : démarrage de l’application
 - `ui/` : écrans et composants graphiques
 - `game/` : logique de jeu (plateau, état, contrôleur, combat, génération d’ennemis)
-- `domain/` : modèles métier (joueur, ennemis, objets, inventaire, pouvoirs)
+- `domain/` : modèles métier (joueur, ennemis, objets, inventaire)
 - `resources/` : assets (audio, images, manifeste)
 
 ## Schéma Mermaid
@@ -46,7 +46,7 @@ flowchart TD
         Q[Player]
         R[Enemy]
         S[Inventory]
-        T[Item / Weapon / Power]
+        T[Item / Weapon / Consumable]
     end
 
     J --> Q

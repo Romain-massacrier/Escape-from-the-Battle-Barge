@@ -2,9 +2,10 @@ package fr.campus.escapebattlebarge.ui.view;
 
 import fr.campus.escapebattlebarge.domain.character.Enemy;
 import fr.campus.escapebattlebarge.domain.character.Player;
-import fr.campus.escapebattlebarge.domain.character.player.PlayerClass;
 import fr.campus.escapebattlebarge.game.core.GameState;
 import fr.campus.escapebattlebarge.game.board.Zone;
+import fr.campus.escapebattlebarge.ui.screen.Position;
+import fr.campus.escapebattlebarge.ui.screen.UiText;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,25 +19,7 @@ public class GamePanel extends JPanel {
     private static final double ZONE_IMAGE_RATIO_SCALE = 0.9;
     private static final Color UI_GREEN = new Color(0, 255, 70);
     private static final Font UI_FONT = new Font("Monospaced", Font.PLAIN, 24);
-
-    private static final Rectangle PLATEAU_AREA = new Rectangle(0, 0, 1536, 1024);
-    private static final Rectangle PLAYER_IMAGE_AREA = new Rectangle(45, 190, 320, 400);
-    private static final Rectangle ZONE_IMAGE_AREA = new Rectangle(370, 180, 800, 600);
-    private static final Rectangle ENEMY_IMAGE_AREA = new Rectangle(1230, 300, 190, 200);
-    private static final Point PLAYER_TEXT_POINT = new Point(85, 550);
-    private static final Point ENEMY_TEXT_POINT = new Point(1220, 550);
-
-    private static final Rectangle CONSOLE_AREA = new Rectangle(400, 700, 880, 250);
-    private static final int CONSOLE_PADDING_X = 20;
-    private static final int CONSOLE_PADDING_TOP = 14;
-    private static final int CONSOLE_PADDING_BOTTOM = 12;
-    private static final int INPUT_HEIGHT = 42;
-    private static final int INPUT_TO_TEXT_GAP = 12;
-    private static final int INPUT_OFFSET_X = -72;
-    private static final int INPUT_OFFSET_Y = 0;
-    private static final int TEXT_OFFSET_X = INPUT_OFFSET_X;
-    private static final String MAIN_PROMPT = "1 lancer dé | 2 inventaire";
-    private static final String COMBAT_PROMPT = "1 Attaquer | 2 Potion | 3 Fuir";
+    private static final Font CONSOLE_FONT = new Font("Monospaced", Font.PLAIN, 22);
 
     private final GameState state;
 
@@ -77,8 +60,8 @@ public class GamePanel extends JPanel {
         squigPortrait = load("/images/enemies/squig.png");
         warbossPortrait = load("/images/enemies/warboss.png");
 
-        int w = (plateau != null) ? plateau.getWidth(this) : PLATEAU_AREA.width;
-        int h = (plateau != null) ? plateau.getHeight(this) : PLATEAU_AREA.height;
+        int w = (plateau != null) ? plateau.getWidth(this) : Position.GamePanel.PLATEAU_AREA.width;
+        int h = (plateau != null) ? plateau.getHeight(this) : Position.GamePanel.PLATEAU_AREA.height;
 
         if (w > 0 && h > 0) {
             setPreferredSize(new Dimension(w, h));
@@ -97,8 +80,7 @@ public class GamePanel extends JPanel {
     }
 
     private Image getPlayerImage() {
-        PlayerClass playerClass = state.getPlayer().getPlayerClass();
-        return (playerClass == PlayerClass.LIBRARIAN) ? librarianPortrait : spaceMarinePortrait;
+        return state.getPlayer().isLibrarian() ? librarianPortrait : spaceMarinePortrait;
     }
 
     private Image getZoneImage() {
@@ -144,7 +126,14 @@ public class GamePanel extends JPanel {
 
     private void drawPlateau(Graphics2D g2) {
         if (plateau != null) {
-            g2.drawImage(plateau, PLATEAU_AREA.x, PLATEAU_AREA.y, PLATEAU_AREA.width, PLATEAU_AREA.height, null);
+            g2.drawImage(
+                    plateau,
+                    Position.GamePanel.PLATEAU_AREA.x,
+                    Position.GamePanel.PLATEAU_AREA.y,
+                    Position.GamePanel.PLATEAU_AREA.width,
+                    Position.GamePanel.PLATEAU_AREA.height,
+                    null
+            );
         }
     }
 
@@ -154,38 +143,45 @@ public class GamePanel extends JPanel {
 
         Image playerImage = getPlayerImage();
         if (playerImage != null) {
-            drawImageKeepingRatio(g2, playerImage, PLAYER_IMAGE_AREA, PLAYER_IMAGE_RATIO_SCALE);
+            drawImageKeepingRatio(g2, playerImage, Position.GamePanel.PLAYER_IMAGE_AREA, PLAYER_IMAGE_RATIO_SCALE);
         }
 
         Image zoneImage = getZoneImage();
         if (zoneImage != null) {
-            drawImageFillBox(g2, zoneImage, ZONE_IMAGE_AREA, ZONE_IMAGE_RATIO_SCALE);
+            drawImageFillBox(g2, zoneImage, Position.GamePanel.ZONE_IMAGE_AREA, ZONE_IMAGE_RATIO_SCALE);
         }
 
         Image enemyImage = getEnemyImage(enemy);
         if (enemyImage != null) {
-            g2.drawImage(enemyImage, ENEMY_IMAGE_AREA.x, ENEMY_IMAGE_AREA.y, ENEMY_IMAGE_AREA.width, ENEMY_IMAGE_AREA.height, null);
+            g2.drawImage(
+                    enemyImage,
+                    Position.GamePanel.ENEMY_IMAGE_AREA.x,
+                    Position.GamePanel.ENEMY_IMAGE_AREA.y,
+                    Position.GamePanel.ENEMY_IMAGE_AREA.width,
+                    Position.GamePanel.ENEMY_IMAGE_AREA.height,
+                    null
+            );
         }
 
         g2.setColor(UI_GREEN);
         g2.setFont(UI_FONT);
 
         String playerWeapon = (player.getInventory().getEquippedWeapon() == null)
-                ? "Aucune"
+                ? UiText.GamePanel.NO_WEAPON
                 : player.getInventory().getEquippedWeapon().getName();
 
-        g2.drawString("Nom: " + safeName(player.getName()), PLAYER_TEXT_POINT.x, PLAYER_TEXT_POINT.y);
-        g2.drawString("PV: " + player.getHp() + "/" + player.getMaxHp(), PLAYER_TEXT_POINT.x, PLAYER_TEXT_POINT.y + 84);
-        g2.drawString("Arme: " + playerWeapon, PLAYER_TEXT_POINT.x, PLAYER_TEXT_POINT.y + 118);
+        g2.drawString(UiText.GamePanel.LABEL_NAME + safeName(player.getName()), Position.GamePanel.PLAYER_TEXT_POINT.x, Position.GamePanel.PLAYER_TEXT_POINT.y);
+        g2.drawString(UiText.GamePanel.LABEL_HP + player.getHp() + "/" + player.getMaxHp(), Position.GamePanel.PLAYER_TEXT_POINT.x, Position.GamePanel.PLAYER_TEXT_POINT.y + 84);
+        g2.drawString(UiText.GamePanel.LABEL_WEAPON + playerWeapon, Position.GamePanel.PLAYER_TEXT_POINT.x, Position.GamePanel.PLAYER_TEXT_POINT.y + 118);
 
         if (enemy != null && enemyImage != null) {
-            g2.drawString("Nom: " + safeName(enemy.getName()), ENEMY_TEXT_POINT.x, ENEMY_TEXT_POINT.y);
-            g2.drawString("PV Ennemi: " + enemy.getHp(), ENEMY_TEXT_POINT.x, ENEMY_TEXT_POINT.y + 84);
+            g2.drawString(UiText.GamePanel.LABEL_NAME + safeName(enemy.getName()), Position.GamePanel.ENEMY_TEXT_POINT.x, Position.GamePanel.ENEMY_TEXT_POINT.y);
+            g2.drawString(UiText.GamePanel.LABEL_ENEMY_HP + enemy.getHp(), Position.GamePanel.ENEMY_TEXT_POINT.x, Position.GamePanel.ENEMY_TEXT_POINT.y + 84);
         }
     }
 
     private String safeName(String name) {
-        return (name == null || name.isBlank()) ? "Inconnu" : name;
+        return (name == null || name.isBlank()) ? UiText.GamePanel.UNKNOWN_NAME : name;
     }
 
     private void drawImageKeepingRatio(Graphics2D g2, Image image, Rectangle box, double ratioScale) {
@@ -218,25 +214,30 @@ public class GamePanel extends JPanel {
     }
 
     private void drawConsole(Graphics2D g2) {
-        g2.setColor(new Color(0, 255, 70));
-        g2.setFont(new Font("Monospaced", Font.PLAIN, 22));
+        g2.setColor(UI_GREEN);
+        g2.setFont(CONSOLE_FONT);
 
         List<String> lines = state.getConsoleLines();
         FontMetrics fm = g2.getFontMetrics();
         int lineHeight = fm.getHeight();
 
         Rectangle input = getInputBounds();
-        int textTop = CONSOLE_AREA.y + CONSOLE_PADDING_TOP;
-        int defaultTextBottom = CONSOLE_AREA.y + CONSOLE_AREA.height - CONSOLE_PADDING_BOTTOM;
-        int textBottom = Math.min(defaultTextBottom, input.y - INPUT_TO_TEXT_GAP);
+        int textTop = Position.GamePanel.CONSOLE_AREA.y + Position.GamePanel.CONSOLE_PADDING_TOP;
+        int defaultTextBottom = Position.GamePanel.CONSOLE_AREA.y + Position.GamePanel.CONSOLE_AREA.height - Position.GamePanel.CONSOLE_PADDING_BOTTOM;
+        int textBottom = Math.min(defaultTextBottom, input.y - Position.GamePanel.INPUT_TO_TEXT_GAP);
         textBottom = Math.max(textTop + lineHeight, textBottom);
         int maxVisibleLines = Math.max(1, (textBottom - textTop) / lineHeight);
 
         List<String> visibleLines = getVisibleConsoleLines(lines, maxVisibleLines);
 
         Shape oldClip = g2.getClip();
-        int textX = CONSOLE_AREA.x + CONSOLE_PADDING_X + TEXT_OFFSET_X;
-        g2.setClip(CONSOLE_AREA.x + TEXT_OFFSET_X, textTop, CONSOLE_AREA.width, Math.max(1, textBottom - textTop));
+        int textX = Position.GamePanel.CONSOLE_AREA.x + Position.GamePanel.CONSOLE_PADDING_X + Position.GamePanel.TEXT_OFFSET_X;
+        g2.setClip(
+            Position.GamePanel.CONSOLE_AREA.x + Position.GamePanel.TEXT_OFFSET_X,
+            textTop,
+            Position.GamePanel.CONSOLE_AREA.width,
+            Math.max(1, textBottom - textTop)
+        );
 
         int lineY = textTop + fm.getAscent();
         for (String line : visibleLines) {
@@ -266,11 +267,11 @@ public class GamePanel extends JPanel {
     }
 
     public Rectangle getInputBounds() {
-        int inputY = CONSOLE_AREA.y + CONSOLE_AREA.height - INPUT_HEIGHT - CONSOLE_PADDING_BOTTOM + INPUT_OFFSET_Y;
-        int inputX = CONSOLE_AREA.x + CONSOLE_PADDING_X + INPUT_OFFSET_X;
-        int inputW = CONSOLE_AREA.width - (CONSOLE_PADDING_X * 2);
+        int inputY = Position.GamePanel.CONSOLE_AREA.y + Position.GamePanel.CONSOLE_AREA.height - Position.GamePanel.INPUT_HEIGHT - Position.GamePanel.CONSOLE_PADDING_BOTTOM + Position.GamePanel.INPUT_OFFSET_Y;
+        int inputX = Position.GamePanel.CONSOLE_AREA.x + Position.GamePanel.CONSOLE_PADDING_X + Position.GamePanel.INPUT_OFFSET_X;
+        int inputW = Position.GamePanel.CONSOLE_AREA.width - (Position.GamePanel.CONSOLE_PADDING_X * 2);
 
-        return new Rectangle(inputX, inputY, inputW, INPUT_HEIGHT);
+        return new Rectangle(inputX, inputY, inputW, Position.GamePanel.INPUT_HEIGHT);
     }
 
     private String findPinnedPrompt(List<String> lines) {
@@ -285,7 +286,7 @@ public class GamePanel extends JPanel {
 
     private boolean isPromptLine(String line) {
         String normalized = stripSessionTag(line);
-        return MAIN_PROMPT.equals(normalized) || COMBAT_PROMPT.equals(normalized);
+        return UiText.GamePanel.MAIN_PROMPT.equals(normalized) || UiText.GamePanel.COMBAT_PROMPT.equals(normalized);
     }
 
     private String stripSessionTag(String line) {

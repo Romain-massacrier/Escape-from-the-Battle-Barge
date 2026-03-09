@@ -26,7 +26,7 @@ public class MenuScreen {
 
             AudioManager.startLoopAudio("/audio/intro.wav");
 
-            JFrame frame = new JFrame("Escape from the Battle Barge");
+            JFrame frame = new JFrame(UiText.APP_TITLE);
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             frame.setResizable(false);
 
@@ -40,20 +40,17 @@ public class MenuScreen {
             background.setLayout(null);
             frame.setContentPane(background);
 
-            int x = 420;
-            int y = 515;
-
-            JLabel options = new JLabel("1  New Game      2  Quit");
+            JLabel options = new JLabel(UiText.Menu.OPTIONS);
             options.setFont(new Font("Monospaced", Font.BOLD, 26));
             options.setForeground(new Color(0, 255, 120));
-            options.setBounds(x + 120, y + 200, 600, 40);
+            options.setBounds(Position.Menu.OPTIONS_BOUNDS);
             background.add(options);
 
-            JLabel prompt = new JLabel("Prononcez votre décision : ");
+            JLabel prompt = new JLabel(UiText.Menu.PROMPT);
 
             prompt.setFont(new Font("Monospaced", Font.PLAIN, 18));
             prompt.setForeground(new Color(0, 255, 120));
-            prompt.setBounds(x + 120, y + 260, 400, 30);
+            prompt.setBounds(Position.Menu.PROMPT_BOUNDS);
 
             background.add(prompt);
 
@@ -63,7 +60,7 @@ public class MenuScreen {
             input.setCaretColor(new Color(0, 255, 120));
             input.setOpaque(false);
             input.setBorder(BorderFactory.createLineBorder(new Color(0, 255, 120), 2));
-            input.setBounds(x + 420, y + 255, 120, 35);
+            input.setBounds(Position.Menu.INPUT_BOUNDS);
 
             background.add(input);
             frame.setSize(bgIcon.getIconWidth(), bgIcon.getIconHeight());

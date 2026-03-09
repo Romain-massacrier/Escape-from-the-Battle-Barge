@@ -11,8 +11,13 @@ import fr.campus.escapebattlebarge.domain.item.equipment.Weapon;
 public class AssaultMarine extends Player {
     // Crée un Assault Marine avec Chainsword équipée.
     public AssaultMarine(String name) {
-        super(name, PlayerClass.ASSAULT_MARINE, 35);
+        super(name, 35);
         Weapon sword = new Weapon("Chainsword", 4, 8);
         getInventory().equipWeapon(sword);
+    }
+
+    @Override
+    public boolean isAssaultMarine() {
+        return true;
     }
 }

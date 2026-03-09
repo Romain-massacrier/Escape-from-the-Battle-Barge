@@ -26,7 +26,7 @@ public class GameIntroScreen {
         // On passe par l'EDT pour éviter les soucis d'affichage Swing.
         SwingUtilities.invokeLater(() -> {
 
-            JFrame frame = new JFrame("Escape from the Battle Barge");
+            JFrame frame = new JFrame(UiText.APP_TITLE);
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             frame.setResizable(false);
 
@@ -50,12 +50,7 @@ public class GameIntroScreen {
             storyArea.setFont(new Font("Monospaced", Font.PLAIN, 20));
             storyArea.setOpaque(false);
 
-            int x = 420;
-            int y = 240;
-            int w = 820;
-            int h = 620;
-
-            storyArea.setBounds(x, y, w, h);
+            storyArea.setBounds(Position.GameIntro.STORY_BOUNDS);
 
             background.add(storyArea);
             frame.setSize(bgIcon.getIconWidth(), bgIcon.getIconHeight());

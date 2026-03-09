@@ -1,7 +1,6 @@
 package fr.campus.escapebattlebarge.domain.character;
 
 import fr.campus.escapebattlebarge.domain.inventory.Inventory;
-import fr.campus.escapebattlebarge.domain.character.player.PlayerClass;
 
 /*
  * Cette classe abstraite représente le joueur pendant une partie (runtime).
@@ -12,16 +11,14 @@ import fr.campus.escapebattlebarge.domain.character.player.PlayerClass;
 public abstract class Player {
 
     private final String name;
-    private final PlayerClass playerClass;
     private int hp;
     private final int maxHp;
     private int position; // case actuelle sur le plateau
     private final Inventory inventory;
 
     // Initialise un joueur avec ses stats de base et un inventaire vide.
-    protected Player(String name, PlayerClass playerClass, int maxHp) {
+    protected Player(String name, int maxHp) {
         this.name = name;
-        this.playerClass = playerClass;
         this.maxHp = maxHp;
         this.hp = maxHp;
         this.position = 1;
@@ -35,10 +32,6 @@ public abstract class Player {
     // Retourne le nom du joueur.
     public String getName() {
         return name;
-    }
-    // Retourne la classe du joueur.
-    public PlayerClass getPlayerClass() {
-        return playerClass;
     }
     // Retourne les PV actuels.
     public int getHp() {
@@ -55,6 +48,16 @@ public abstract class Player {
     // Retourne l'inventaire du joueur.
     public Inventory getInventory() {
         return inventory;
+    }
+
+    /** Retourne true si le joueur est un Librarian. */
+    public boolean isLibrarian() {
+        return false;
+    }
+
+    /** Retourne true si le joueur est un Assault Marine. */
+    public boolean isAssaultMarine() {
+        return false;
     }
 
     // =========================

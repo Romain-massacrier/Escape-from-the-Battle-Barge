@@ -6,12 +6,10 @@ import fr.campus.escapebattlebarge.game.combat.CombatEngine;
 import fr.campus.escapebattlebarge.game.core.GameController;
 import fr.campus.escapebattlebarge.game.core.GameState;
 import fr.campus.escapebattlebarge.ui.audio.AudioManager;
+import fr.campus.escapebattlebarge.ui.screen.UiText;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseWheelEvent;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -29,7 +27,7 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
     private volatile boolean waitingForChoice = false;
 
     public GameFrame(GameState state, CharacterDao characterDao, Character currentHero, Runnable onReturnToMenu) {
-        super("Escape from the Battle Barge");
+        super(UiText.APP_TITLE);
 
         this.state = state;
         this.panel = new GamePanel(state);
@@ -53,27 +51,11 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
         setContentPane(layered);
         pack();
         setLocationRelativeTo(null);
-        disableMouseInput();
         setVisible(true);
 
         refreshAndFocusInput();
 
         AudioManager.startLoopAudio("/audio/game.wav");
-    }
-
-    private void disableMouseInput() {
-        JPanel blocker = new JPanel();
-        blocker.setOpaque(false);
-
-        blocker.addMouseListener(new MouseAdapter() {
-        });
-        blocker.addMouseMotionListener(new MouseMotionAdapter() {
-        });
-        blocker.addMouseWheelListener((MouseWheelEvent e) -> {
-        });
-
-        setGlassPane(blocker);
-        blocker.setVisible(true);
     }
 
     private void configureInputField(JLayeredPane layered) {
@@ -107,7 +89,7 @@ public class GameFrame extends JFrame implements CombatEngine.InputProvider {
             case "1" -> runAction(() -> controller.onRoll(this));
             case "2" -> runAction(() -> controller.onInventory(this));
             default -> {
-                state.log("Choix invalide. 1 lancer dé | 2 inventaire");
+                state.log(UiText.GameFrame.INVALID_CHOICE);
                 SwingUtilities.invokeLater(panel::repaint);
             }
         }

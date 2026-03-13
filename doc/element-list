@@ -1,10 +1,8 @@
-fr.campus.escapebattlebarge
 fr.campus.escapebattlebarge.app
 fr.campus.escapebattlebarge.db
 fr.campus.escapebattlebarge.domain.character
 fr.campus.escapebattlebarge.domain.character.enemy
 fr.campus.escapebattlebarge.domain.character.player
-fr.campus.escapebattlebarge.domain.combat
 fr.campus.escapebattlebarge.domain.consumable
 fr.campus.escapebattlebarge.domain.inventory
 fr.campus.escapebattlebarge.domain.item
@@ -12,11 +10,8 @@ fr.campus.escapebattlebarge.domain.item.equipment
 fr.campus.escapebattlebarge.game.board
 fr.campus.escapebattlebarge.game.combat
 fr.campus.escapebattlebarge.game.core
-fr.campus.escapebattlebarge.game.factory
-fr.campus.escapebattlebarge.game.loot
 fr.campus.escapebattlebarge.game.random
 fr.campus.escapebattlebarge.ui.app
 fr.campus.escapebattlebarge.ui.audio
-fr.campus.escapebattlebarge.ui.console
 fr.campus.escapebattlebarge.ui.screen
 fr.campus.escapebattlebarge.ui.view
